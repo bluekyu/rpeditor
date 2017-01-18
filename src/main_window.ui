@@ -40,6 +40,8 @@
     <addaction name="action_save_project"/>
     <addaction name="action_save_project_as"/>
     <addaction name="separator"/>
+    <addaction name="action_import_model_"/>
+    <addaction name="separator"/>
     <addaction name="action_exit"/>
    </widget>
    <widget class="QMenu" name="menu_help_">
@@ -232,6 +234,14 @@
    </property>
    <property name="text">
     <string>Save Project As...</string>
+   </property>
+  </action>
+  <action name="action_import_model_">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Import Model</string>
    </property>
   </action>
  </widget>

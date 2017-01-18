@@ -60,6 +60,8 @@ private:
 
     void connect_restapi_server(void);
 
+    void set_enable_restapi_actions(bool enable);
+
     void about_application(void);
 
     Ui::MainWindow* ui_;

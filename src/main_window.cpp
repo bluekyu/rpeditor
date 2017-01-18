@@ -15,8 +15,8 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/filesystem.hpp>
 
-#include "options_dialog.hpp"
 #include "restapi_client.hpp"
+#include "restapi/showbase.hpp"
 
 namespace rpeditor {
 
@@ -78,6 +78,9 @@ void MainWindow::closeEvent(QCloseEvent* ev)
     {
         restapi_network_thread_->join();
         restapi_network_thread_.reset();
+
+        // skip when closing
+        //set_enable_restapi_actions(false);
     }
 
     save_settings();
@@ -209,6 +212,11 @@ void MainWindow::setup_ui(void)
 //        );
 //    });
 
+    connect(ui_->action_import_model_, &QAction::triggered, [this]() {
+        const std::string& file_path = QFileDialog::getOpenFileName(this, "Load Model", "", QString("All Files (*.*)")).toStdString();
+        restapi_client_->write(restapi::ShowBase::put_model(file_path));
+    });
+
     ui_->action_exit->setShortcuts(QKeySequence::Quit);
 
     connect(ui_->action_run_renderer, &QAction::triggered, this, &MainWindow::connect_restapi_server);
@@ -269,6 +277,13 @@ void MainWindow::connect_restapi_server(void)
 
         BOOST_LOG_TRIVIAL(debug) << "RESTAPI network thread is done!";
     });
+
+    set_enable_restapi_actions(true);
+}
+
+void MainWindow::set_enable_restapi_actions(bool enable)
+{
+    ui_->action_import_model_->setEnabled(enable);
 }
 
 void MainWindow::about_application(void)

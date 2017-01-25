@@ -1,6 +1,13 @@
-#include "restapi_client.hpp"
+#include "restapi/restapi_client.hpp"
+
+#include <QCoreApplication>
+
+#include "restapi/resolve_message.hpp"
+#include "restapi/restapi_event.hpp"
+#include "main_window.hpp"
 
 namespace rpeditor {
+namespace restapi {
 
 RestAPIClient::RestAPIClient(boost::asio::io_service& io_service,
     boost::asio::ip::tcp::resolver::iterator endpoint_iterator): io_service_(io_service), socket_(io_service)
@@ -51,7 +58,7 @@ void RestAPIClient::do_read_body(void)
     {
         if (!ec)
         {
-            // TODO: parse json
+            QCoreApplication::postEvent(MainWindow::get_instance(), new RestAPIEvent(std::string(read_msg_.get_body(), read_msg_.get_body_length())));
 
             do_read_header();
         }
@@ -85,4 +92,5 @@ void RestAPIClient::do_write(void)
     );
 }
 
+}   // namespace restapi
 }   // namespace rpeditor

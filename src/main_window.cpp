@@ -10,17 +10,81 @@
 #include <QTreeWidget>
 #include <QFileDialog>
 #include <QStandardPaths>
+#include <QCloseEvent>
 
 #include <boost/log/trivial.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/filesystem.hpp>
 
-#include "restapi_client.hpp"
-#include "restapi/showbase.hpp"
+#include "restapi/resources/showbase.hpp"
+#include "restapi/restapi_client.hpp"
+#include "restapi/restapi_event.hpp"
+#include "restapi/resolve_message.hpp"
+#include "collapsible_widget.hpp"
 
 namespace rpeditor {
 
 static const char* SETTING_FILE_NAME = "config.json";
+
+void update_scenegraph_subtree(QTreeWidgetItem* parent, const rapidjson::Value& current)
+{
+    QTreeWidgetItem* item = new QTreeWidgetItem;
+    item->setText(0, current["name"].GetString());
+
+    parent->addChild(item);
+
+    if (current["children"].IsArray())
+    {
+        for (const auto& child: current["children"].GetArray())
+            update_scenegraph_subtree(item, child);
+    }
+    else
+    {
+        BOOST_LOG_TRIVIAL(error) << "Invalid API specification.";
+    }
+}
+
+// ************************************************************************************************
+
+bool MainWindow::is_shown_system_console_ = false;
+bool MainWindow::is_created_system_console_ = false;
+
+bool MainWindow::toggle_system_console(void)
+{
+#if defined(BOOST_OS_WINDOWS)
+    if (GetConsoleWindow())
+    {
+        return is_shown_system_console_ = !ShowWindow(GetConsoleWindow(), is_shown_system_console_ ? SW_HIDE : SW_RESTORE);
+    }
+    else
+    {
+        if (!AllocConsole())
+        {
+            BOOST_LOG_TRIVIAL(error) << "Cannot allocate console.";
+            return is_shown_system_console_ = false;
+        }
+
+        if (AttachConsole(GetCurrentProcessId()))
+        {
+            BOOST_LOG_TRIVIAL(error) << "Cannot attach console.";
+            FreeConsole();
+            return is_shown_system_console_ = false;
+        }
+
+        is_created_system_console_ = true;
+
+        FILE* dummy;
+        freopen_s(&dummy, "CON", "w", stdout);
+        freopen_s(&dummy, "CON", "w", stderr);
+
+        BOOST_LOG_TRIVIAL(info) << "System console is created.";
+
+        return is_shown_system_console_ = true;
+    }
+#else
+    return false;
+#endif
+}
 
 MainWindow::MainWindow(QWidget *parent): QMainWindow(parent), ui_(new Ui::MainWindow)
 {
@@ -28,24 +92,11 @@ MainWindow::MainWindow(QWidget *parent): QMainWindow(parent), ui_(new Ui::MainWi
 
     ui_->setupUi(this);
 
-    // logging console
-    logging_sink.reset(new sink_t(boost::shared_ptr<LoggingConsoleBackend>(new LoggingConsoleBackend(ui_->logging_console))));
-    logging_sink->set_formatter(log_format);
-    boost::log::core::get()->add_sink(logging_sink);
-
     setup_ui();
-}
-
-MainWindow::~MainWindow()
-{
-    BOOST_LOG_TRIVIAL(debug) << "Destructing MainWindow ...";
-
-    boost::log::core::get()->remove_sink(logging_sink);
 }
 
 void MainWindow::update_ui(void)
 {
-//    ui_->logging_console->setMaximumBlockCount(settings->properties.window.console_max_line);
 //    resize(settings->properties.window.width, settings->properties.window.height);
 //
 //    ui_->action_save_project->setEnabled(bool(project));
@@ -60,10 +111,26 @@ void MainWindow::update_ui(void)
     }
 }
 
-void MainWindow::update_scenegraph_tree(void)
+void MainWindow::update_scenegraph_tree(const rapidjson::Value& root_object)
 {
-    // TODO: implement
     BOOST_LOG_TRIVIAL(debug) << "Update scenegraph in tree widget.";
+
+    ui_->scenegraph_tree_->clear();
+
+    QTreeWidgetItem* root_item = new QTreeWidgetItem;
+    root_item->setText(0, root_object["name"].GetString());
+
+    ui_->scenegraph_tree_->addTopLevelItem(root_item);
+
+    if (root_object["children"].IsArray())
+    {
+        for (const auto& child: root_object["children"].GetArray())
+            update_scenegraph_subtree(root_item, child);
+    }
+    else
+    {
+        BOOST_LOG_TRIVIAL(error) << "Invalid API specification.";
+    }
 }
 
 void MainWindow::closeEvent(QCloseEvent* ev)
@@ -85,6 +152,14 @@ void MainWindow::closeEvent(QCloseEvent* ev)
 
     save_settings();
 
+#if defined(BOOST_OS_WINDOWS)
+    ShowWindow(GetConsoleWindow(), SW_HIDE);
+
+    // avoid crashing in Qt.
+    if (is_created_system_console_)
+        FreeConsole();
+#endif
+
     ev->accept();
 }
 
@@ -92,8 +167,8 @@ bool MainWindow::event(QEvent* ev)
 {
     switch (ev->type())
     {
-    case EventType::UPDATE_SCENEGRAPH_TREE:
-        update_scenegraph_tree();
+    case restapi::RestAPIEvent::EVENT_TYPE:
+        restapi::resolve_message(static_cast<restapi::RestAPIEvent*>(ev)->get_message());
         break;
 
     default:
@@ -195,6 +270,11 @@ void MainWindow::setup_ui(void)
 
     setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);    // dock widget corner
 
+    CollapsibleWidget* node_pose_widget_ = new CollapsibleWidget;
+    ui_->node_tab_layout_->addWidget(node_pose_widget_);
+
+    node_pose_widget_->set_content_widget(ui_->node_pose_widget_);
+
 //    ui_->action_new_project->setShortcuts(QKeySequence::New);
 //
 //    ui_->action_save_project->setShortcuts(QKeySequence::Save);
@@ -213,8 +293,19 @@ void MainWindow::setup_ui(void)
 //    });
 
     connect(ui_->action_import_model_, &QAction::triggered, [this]() {
-        const std::string& file_path = QFileDialog::getOpenFileName(this, "Load Model", "", QString("All Files (*.*)")).toStdString();
+        const std::string& file_path = QFileDialog::getOpenFileName(this, "Import Model", "", QString("All Files (*.*)")).toStdString();
         restapi_client_->write(restapi::ShowBase::put_model(file_path));
+    });
+
+    connect(ui_->action_refresh_scenegraph_, &QAction::triggered, [this]() {
+        static std::string msg(
+            "{"
+            "\"resource\": \"CRModel/TWorld\","
+            "\"method\": \"GET\""
+            "}"
+        );
+
+        restapi_client_->write(msg);
     });
 
     ui_->action_exit->setShortcuts(QKeySequence::Quit);
@@ -228,6 +319,15 @@ void MainWindow::setup_ui(void)
 //            update_ui();
 //        }
 //    });
+
+#if defined(BOOST_OS_WINDOWS)
+    connect(ui_->action_toggle_system_console_, &QAction::triggered, [this]() {
+        ui_->action_toggle_system_console_->setChecked(toggle_system_console());
+    });
+#else
+// this action can be only used in Windows.
+    ui_->action_toggle_system_console_->setEnabled(false);
+#endif
 
     connect(ui_->action_about_qt, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
     connect(ui_->action_about_application, &QAction::triggered, this, &MainWindow::about_application);
@@ -264,7 +364,7 @@ void MainWindow::connect_restapi_server(void)
             boost::asio::ip::tcp::resolver resolver(io_service);
             auto endpoint_iterator = resolver.resolve({ "127.0.0.1", "8888" });
 
-            restapi_client_ = std::make_shared<RestAPIClient>(io_service, endpoint_iterator);
+            restapi_client_ = std::make_shared<restapi::RestAPIClient>(io_service, endpoint_iterator);
 
             io_service.run();
 
@@ -284,6 +384,7 @@ void MainWindow::connect_restapi_server(void)
 void MainWindow::set_enable_restapi_actions(bool enable)
 {
     ui_->action_import_model_->setEnabled(enable);
+    ui_->action_refresh_scenegraph_->setEnabled(enable);
 }
 
 void MainWindow::about_application(void)

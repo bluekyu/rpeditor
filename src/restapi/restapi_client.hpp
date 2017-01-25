@@ -7,6 +7,7 @@
 #include "restapi_message.hpp"
 
 namespace rpeditor {
+namespace restapi {
 
 class RestAPIClient
 {
@@ -51,4 +52,5 @@ inline void RestAPIClient::write(const std::string& json_msg)
     });
 }
 
+}   // namespace restapi
 }   // namespace rpeditor

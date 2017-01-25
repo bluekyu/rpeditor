@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1274</width>
-    <height>866</height>
+    <width>960</width>
+    <height>540</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,14 +20,123 @@
    <property name="enabled">
     <bool>true</bool>
    </property>
-   <layout class="QHBoxLayout" name="_2"/>
+   <layout class="QHBoxLayout" name="_2">
+    <item>
+     <widget class="QTabWidget" name="main_tab_widget_">
+      <property name="currentIndex">
+       <number>1</number>
+      </property>
+      <widget class="QWidget" name="node_tab_">
+       <attribute name="title">
+        <string>Node</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="node_tab_layout_">
+        <item>
+         <widget class="QWidget" name="node_pose_widget_" native="true">
+          <layout class="QVBoxLayout" name="node_pose_layout_" stretch="0,0">
+           <property name="bottomMargin">
+            <number>1</number>
+           </property>
+           <item>
+            <layout class="QHBoxLayout" name="layout_pos_" stretch="0,0,0,0">
+             <item>
+              <widget class="QLabel" name="lable_pos_">
+               <property name="text">
+                <string>Pos</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="edit_pos_x_"/>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="edit_pos_y_"/>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="edit_pos_z_"/>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="layout_hpr">
+             <item>
+              <widget class="QLabel" name="label_hpr">
+               <property name="text">
+                <string>HPR</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="edit_hpr_h_"/>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="edit_hpr_p_"/>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="edit_hpr_r_"/>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab_2">
+       <attribute name="title">
+        <string>Tab 2</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_3">
+        <item>
+         <widget class="QSplitter" name="splitter">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="childrenCollapsible">
+           <bool>false</bool>
+          </property>
+          <widget class="QWidget" name="verticalLayoutWidget">
+           <layout class="QHBoxLayout" name="horizontalLayout_3">
+            <item>
+             <widget class="QLabel" name="label">
+              <property name="text">
+               <string>TextLabel</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="lineEdit"/>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="verticalLayoutWidget_2">
+           <layout class="QHBoxLayout" name="horizontalLayout_4">
+            <item>
+             <widget class="QLabel" name="label_2">
+              <property name="text">
+               <string>TextLabel</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="lineEdit_2"/>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
+   </layout>
   </widget>
   <widget class="QMenuBar" name="menu_bar_">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1274</width>
+     <width>960</width>
      <height>21</height>
     </rect>
    </property>
@@ -56,6 +165,7 @@
      <string>Tools</string>
     </property>
     <addaction name="action_ffmpeg"/>
+    <addaction name="action_toggle_system_console_"/>
     <addaction name="separator"/>
     <addaction name="action_options"/>
    </widget>
@@ -65,7 +175,14 @@
     </property>
     <addaction name="action_run_renderer"/>
    </widget>
+   <widget class="QMenu" name="menuEdit">
+    <property name="title">
+     <string>Edit</string>
+    </property>
+    <addaction name="action_refresh_scenegraph_"/>
+   </widget>
    <addaction name="menu_file_"/>
+   <addaction name="menuEdit"/>
    <addaction name="menu_project"/>
    <addaction name="menuTools"/>
    <addaction name="menu_help_"/>
@@ -132,37 +249,6 @@
          </item>
         </layout>
        </widget>
-      </widget>
-     </item>
-    </layout>
-   </widget>
-  </widget>
-  <widget class="QDockWidget" name="dock_widget_logging">
-   <property name="minimumSize">
-    <size>
-     <width>480</width>
-     <height>270</height>
-    </size>
-   </property>
-   <property name="features">
-    <set>QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable</set>
-   </property>
-   <property name="allowedAreas">
-    <set>Qt::BottomDockWidgetArea|Qt::TopDockWidgetArea</set>
-   </property>
-   <property name="windowTitle">
-    <string>Logging Console</string>
-   </property>
-   <attribute name="dockWidgetArea">
-    <number>8</number>
-   </attribute>
-   <widget class="QWidget" name="dockWidgetContents_2">
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
-     <item>
-      <widget class="QPlainTextEdit" name="logging_console">
-       <property name="readOnly">
-        <bool>true</bool>
-       </property>
       </widget>
      </item>
     </layout>
@@ -242,6 +328,19 @@
    </property>
    <property name="text">
     <string>Import Model</string>
+   </property>
+  </action>
+  <action name="action_toggle_system_console_">
+   <property name="text">
+    <string>Toggle System Console</string>
+   </property>
+  </action>
+  <action name="action_refresh_scenegraph_">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Refersh Scenegraph</string>
    </property>
   </action>
  </widget>

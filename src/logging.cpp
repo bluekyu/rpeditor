@@ -8,6 +8,9 @@
 #include <boost/log/utility/setup/file.hpp>
 #include <boost/log/utility/setup/console.hpp>
 
+#include <QMessageLogContext>
+#include <QString>
+
 namespace rpeditor {
 
 //! log foramt expression.

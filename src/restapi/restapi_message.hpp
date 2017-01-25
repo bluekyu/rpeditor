@@ -4,6 +4,7 @@
 #include <type_traits>
 
 namespace rpeditor {
+namespace restapi {
 
 class RestAPIMessage
 {
@@ -103,4 +104,5 @@ inline void RestAPIMessage::encode_header(void)
     set_body_length(data_.body_length);
 }
 
+}   // namespace restapi
 }   // namespace rpeditor

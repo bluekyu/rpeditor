@@ -33,6 +33,10 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
         set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /LTCG")
         set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /LTCG")
+
+        # target to Windows 7
+        add_definitions("-DWINVER=0x0601")
+        add_definitions("-D_WIN32_WINNT=0x0601")
     endif()
 else()
     message(WARNING "Unsupported system: ${CMAKE_SYSTEM_NAME}")

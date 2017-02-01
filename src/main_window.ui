@@ -24,102 +24,151 @@
     <item>
      <widget class="QTabWidget" name="main_tab_widget_">
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
-      <widget class="QWidget" name="node_tab_">
+      <widget class="QWidget" name="tab">
        <attribute name="title">
-        <string>Node</string>
+        <string>NodePath</string>
        </attribute>
-       <layout class="QVBoxLayout" name="node_tab_layout_">
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
         <item>
-         <widget class="QWidget" name="node_pose_widget_" native="true">
-          <layout class="QVBoxLayout" name="node_pose_layout_" stretch="0,0">
-           <property name="bottomMargin">
-            <number>1</number>
+         <widget class="QScrollArea" name="scrollArea">
+          <property name="frameShape">
+           <enum>QFrame::NoFrame</enum>
+          </property>
+          <property name="horizontalScrollBarPolicy">
+           <enum>Qt::ScrollBarAlwaysOff</enum>
+          </property>
+          <property name="widgetResizable">
+           <bool>true</bool>
+          </property>
+          <widget class="QWidget" name="scrollAreaWidgetContents">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>619</width>
+             <height>425</height>
+            </rect>
            </property>
-           <item>
-            <layout class="QHBoxLayout" name="layout_pos_" stretch="0,0,0,0">
-             <item>
-              <widget class="QLabel" name="lable_pos_">
-               <property name="text">
-                <string>Pos</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLineEdit" name="edit_pos_x_"/>
-             </item>
-             <item>
-              <widget class="QLineEdit" name="edit_pos_y_"/>
-             </item>
-             <item>
-              <widget class="QLineEdit" name="edit_pos_z_"/>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <layout class="QHBoxLayout" name="layout_hpr">
-             <item>
-              <widget class="QLabel" name="label_hpr">
-               <property name="text">
-                <string>HPR</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLineEdit" name="edit_hpr_h_"/>
-             </item>
-             <item>
-              <widget class="QLineEdit" name="edit_hpr_p_"/>
-             </item>
-             <item>
-              <widget class="QLineEdit" name="edit_hpr_r_"/>
-             </item>
-            </layout>
-           </item>
-          </layout>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QWidget" name="tab_2">
-       <attribute name="title">
-        <string>Tab 2</string>
-       </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_3">
-        <item>
-         <widget class="QSplitter" name="splitter">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="childrenCollapsible">
-           <bool>false</bool>
-          </property>
-          <widget class="QWidget" name="verticalLayoutWidget">
-           <layout class="QHBoxLayout" name="horizontalLayout_3">
+           <layout class="QVBoxLayout" name="verticalLayout_3">
             <item>
-             <widget class="QLabel" name="label">
-              <property name="text">
-               <string>TextLabel</string>
+             <widget class="QGroupBox" name="pose_groupbox_">
+              <property name="title">
+               <string>Pose</string>
               </property>
+              <property name="flat">
+               <bool>false</bool>
+              </property>
+              <property name="checkable">
+               <bool>false</bool>
+              </property>
+              <layout class="QFormLayout" name="formLayout_3">
+               <item row="0" column="0">
+                <widget class="QLabel" name="translation_label_">
+                 <property name="text">
+                  <string>Translation</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <layout class="QHBoxLayout" name="horizontalLayout_3">
+                 <item>
+                  <widget class="QLineEdit" name="translation_line_z_"/>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="translation_line_y_"/>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="translation_line_x_"/>
+                 </item>
+                </layout>
+               </item>
+               <item row="1" column="0">
+                <widget class="QLabel" name="hpr_label_">
+                 <property name="text">
+                  <string>HPR</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="1">
+                <layout class="QHBoxLayout" name="horizontalLayout_4">
+                 <item>
+                  <widget class="QLineEdit" name="hpr_edit_h_"/>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="hpr_edit_p_"/>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="hpr_edit_r_"/>
+                 </item>
+                </layout>
+               </item>
+               <item row="2" column="0">
+                <widget class="QLabel" name="scale_label_">
+                 <property name="text">
+                  <string>Scale</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="2" column="1">
+                <layout class="QHBoxLayout" name="horizontalLayout_5">
+                 <item>
+                  <widget class="QLineEdit" name="scale_edit_x_"/>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="scale_edit_y_"/>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="scale_edit_z_"/>
+                 </item>
+                </layout>
+               </item>
+              </layout>
              </widget>
             </item>
             <item>
-             <widget class="QLineEdit" name="lineEdit"/>
-            </item>
-           </layout>
-          </widget>
-          <widget class="QWidget" name="verticalLayoutWidget_2">
-           <layout class="QHBoxLayout" name="horizontalLayout_4">
-            <item>
-             <widget class="QLabel" name="label_2">
-              <property name="text">
-               <string>TextLabel</string>
+             <widget class="QGroupBox" name="visibility_groupbox_">
+              <property name="title">
+               <string>Visibility</string>
               </property>
+              <layout class="QVBoxLayout" name="verticalLayout">
+               <item>
+                <widget class="QCheckBox" name="visible_checkbox_">
+                 <property name="text">
+                  <string>Visible</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="tight_bounds_checkbox_">
+                 <property name="text">
+                  <string>Tight Bounds</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="wireframe_checkbox_">
+                 <property name="text">
+                  <string>Wireframe</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
              </widget>
             </item>
             <item>
-             <widget class="QLineEdit" name="lineEdit_2"/>
+             <spacer name="verticalSpacer">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
             </item>
            </layout>
           </widget>

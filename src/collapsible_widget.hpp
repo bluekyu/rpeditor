@@ -3,6 +3,8 @@
 #include <QWidget>
 
 class QScrollArea;
+class QToolButton;
+class QParallelAnimationGroup;
 
 namespace Ui {
 class CollapsibleWidget;
@@ -22,6 +24,9 @@ public:
 
 private:
     QScrollArea* contents_area_;
+    QToolButton* toggle_button_;
+    QParallelAnimationGroup* toggle_animation_;
+    int animation_duration_ = 300;
 };
 
 }   // namespace rpeditor

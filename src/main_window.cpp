@@ -4,13 +4,13 @@
 #include <string>
 #include <stdexcept>
 
-#include <QMessageBox>
-#include <QApplication>
-#include <QProgressBar>
-#include <QTreeWidget>
-#include <QFileDialog>
-#include <QStandardPaths>
-#include <QCloseEvent>
+#include <QtWidgets/QMessageBox>
+#include <QtWidgets/QApplication>
+#include <QtWidgets/QProgressBar>
+#include <QtWidgets/QTreeWidget>
+#include <QtWidgets/QFileDialog>
+#include <QtCore/QStandardPaths>
+#include <QtGui/QCloseEvent>
 
 #include <boost/log/trivial.hpp>
 #include <boost/property_tree/json_parser.hpp>
@@ -20,7 +20,6 @@
 #include "restapi/restapi_client.hpp"
 #include "restapi/restapi_event.hpp"
 #include "restapi/resolve_message.hpp"
-#include "collapsible_widget.hpp"
 
 namespace rpeditor {
 
@@ -269,11 +268,6 @@ void MainWindow::setup_ui(void)
 //    setup_project_tree(core::project_dir_path.string(), nullptr);
 
     setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);    // dock widget corner
-
-    CollapsibleWidget* node_pose_widget_ = new CollapsibleWidget;
-    ui_->node_tab_layout_->addWidget(node_pose_widget_);
-
-    node_pose_widget_->set_content_widget(ui_->node_pose_widget_);
 
 //    ui_->action_new_project->setShortcuts(QKeySequence::New);
 //

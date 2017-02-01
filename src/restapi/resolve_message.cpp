@@ -1,35 +1,53 @@
 #include "restapi/resolve_message.hpp"
 
 #include <iostream>
-#include <unordered_map>
-#include <functional>
 
 #include <boost/log/trivial.hpp>
 
 #include <rapidjson/document.h>
+#include <rapidjson/error/en.h>
 
 namespace rpeditor {
-namespace restapi {
 
-std::unordered_map<std::string, std::function<void(const rapidjson::Document&)>> resolver_map ={
-    //{ "CRModel/TWorld", ResolveTWorld },
-};
+ResolverMapType& get_resolver_map(void)
+{
+    static ResolverMapType resolver_map;
+    return resolver_map;
+}
 
 void resolve_message(const std::string& restapi_message)
 {
-    rapidjson::Document dom;
-    dom.Parse(restapi_message.c_str());
+    rapidjson::Document doc;
+    rapidjson::ParseResult result = doc.Parse(restapi_message.c_str());
 
-    const auto& resource = dom["resource"].GetString();
+    if (!result)
+    {
+        BOOST_LOG_TRIVIAL(error) << "JSON parse error: " << rapidjson::GetParseError_En(result.Code());
+        return;
+    }
+
+    if (!doc.IsObject())
+    {
+        BOOST_LOG_TRIVIAL(error) << "JSON Document is NOT object: " << restapi_message;
+        return;
+    }
+
+    if (!doc.HasMember("resource"))
+    {
+        BOOST_LOG_TRIVIAL(error) << "Message has NOT 'resource': " << restapi_message;
+        return;
+    }
+
+    const auto& resource = doc["resource"].GetString();
+    auto& resolver_map = get_resolver_map();
     if (resolver_map.find(resource) != resolver_map.end())
     {
-        resolver_map.at(resource)(dom);
+        resolver_map.at(resource)(doc);
     }
     else
     {
-        BOOST_LOG_TRIVIAL(error) << "NO resolver for the resource: " << resource << std::endl;
+        BOOST_LOG_TRIVIAL(error) << "NO resolver for the resource: " << resource;
     }
 }
 
-}   // namespace restapi
 }   // namespace rpeditor

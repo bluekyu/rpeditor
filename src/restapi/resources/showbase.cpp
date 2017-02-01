@@ -6,7 +6,6 @@
 #include "restapi/config.hpp"
 
 namespace rpeditor {
-namespace restapi {
 
 #define RESOURCE_PREFIX "showbase"
 
@@ -27,5 +26,4 @@ std::string ShowBase::put_model(const std::string& file_path)
     return StringfyDocument(dom);
 }
 
-}   // namespace restapi
 }   // namespace rpeditor

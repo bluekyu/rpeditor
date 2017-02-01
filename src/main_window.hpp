@@ -13,9 +13,7 @@ class MainWindow;
 
 namespace rpeditor {
 
-namespace restapi {
 class RestAPIClient;
-}
 
 /**
  */
@@ -57,7 +55,7 @@ private:
 
     void setup_ui(void);
 
-    void connect_restapi_server(void);
+    void connect_rendering_server(void);
 
     void set_enable_restapi_actions(bool enable);
 
@@ -67,7 +65,7 @@ private:
 
     std::string config_dir_path_;   ///< Path of configuration directory of application.
 
-    std::shared_ptr<restapi::RestAPIClient> restapi_client_;
+    RestAPIClient* restapi_client_;
     std::shared_ptr<std::thread> restapi_network_thread_;
 };
 

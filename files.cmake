@@ -16,7 +16,6 @@ set(source_src_restapi
     "${PROJECT_SOURCE_DIR}/src/restapi/restapi_client.cpp"
     "${PROJECT_SOURCE_DIR}/src/restapi/restapi_client.hpp"
     "${PROJECT_SOURCE_DIR}/src/restapi/restapi_event.hpp"
-    "${PROJECT_SOURCE_DIR}/src/restapi/restapi_message.hpp"
 )
 
 set(source_src

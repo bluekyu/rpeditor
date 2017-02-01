@@ -2,10 +2,9 @@
 
 #include <string>
 
-#include <QEvent>
+#include <QtCore/QEvent>
 
 namespace rpeditor {
-namespace restapi {
 
 class RestAPIEvent: public QEvent
 {
@@ -32,5 +31,4 @@ inline const std::string& RestAPIEvent::get_message(void) const
     return restapi_message_;
 }
 
-}   // namespace restapi
 }   // namespace rpeditor

@@ -16,6 +16,10 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/filesystem.hpp>
 
+#if defined(BOOST_OS_WINDOWS)
+#include <Windows.h>
+#endif
+
 #include "restapi/resources/showbase.hpp"
 #include "restapi/restapi_client.hpp"
 #include "restapi/restapi_event.hpp"
@@ -166,8 +170,8 @@ bool MainWindow::event(QEvent* ev)
 {
     switch (ev->type())
     {
-    case restapi::RestAPIEvent::EVENT_TYPE:
-        restapi::resolve_message(static_cast<restapi::RestAPIEvent*>(ev)->get_message());
+    case RestAPIEvent::EVENT_TYPE:
+        resolve_message(static_cast<RestAPIEvent*>(ev)->get_message());
         break;
 
     default:
@@ -288,7 +292,7 @@ void MainWindow::setup_ui(void)
 
     connect(ui_->action_import_model_, &QAction::triggered, [this]() {
         const std::string& file_path = QFileDialog::getOpenFileName(this, "Import Model", "", QString("All Files (*.*)")).toStdString();
-        restapi_client_->write(restapi::ShowBase::put_model(file_path));
+        restapi_client_->write(ShowBase::put_model(file_path));
     });
 
     connect(ui_->action_refresh_scenegraph_, &QAction::triggered, [this]() {
@@ -304,7 +308,7 @@ void MainWindow::setup_ui(void)
 
     ui_->action_exit->setShortcuts(QKeySequence::Quit);
 
-    connect(ui_->action_run_renderer, &QAction::triggered, this, &MainWindow::connect_restapi_server);
+    connect(ui_->action_run_renderer, &QAction::triggered, this, &MainWindow::connect_rendering_server);
 
 //    ui_->action_options->setShortcuts(QKeySequence::Preferences);
 //    connect(ui_->action_options, &QAction::triggered, [this]() {
@@ -344,35 +348,24 @@ void MainWindow::setup_ui(void)
     ui_->status_bar->showMessage("Ready");
 }
 
-void MainWindow::connect_restapi_server(void)
+void MainWindow::connect_rendering_server(void)
 {
-    BOOST_LOG_TRIVIAL(debug) << "Creating RESTAPI network thread ...";
+    if (!restapi_client_)
+    {
+        BOOST_LOG_TRIVIAL(info) << "Connecting rendering server.";
 
-    restapi_network_thread_ = std::make_shared<std::thread>([this](void) {
+        restapi_client_ = new RestAPIClient(QUrl(QStringLiteral("ws://localhost:8888")), this);
 
-        BOOST_LOG_TRIVIAL(debug) << "RESTAPI network thread will start ...";
+        QObject::connect(restapi_client_, &RestAPIClient::closed, [this]() {
+            BOOST_LOG_TRIVIAL(info) << "Rendering server connection is closed.";
 
-        try
-        {
-            boost::asio::io_service io_service;
-            boost::asio::ip::tcp::resolver resolver(io_service);
-            auto endpoint_iterator = resolver.resolve({ "127.0.0.1", "8888" });
+            restapi_client_->deleteLater();
+            restapi_client_ = nullptr;
+            set_enable_restapi_actions(false);
+        });
 
-            restapi_client_ = std::make_shared<restapi::RestAPIClient>(io_service, endpoint_iterator);
-
-            io_service.run();
-
-            restapi_client_.reset();
-        }
-        catch (std::exception& e)
-        {
-            BOOST_LOG_TRIVIAL(error) << "RESTAPI network thread occurs exception: " << e.what();
-        }
-
-        BOOST_LOG_TRIVIAL(debug) << "RESTAPI network thread is done!";
-    });
-
-    set_enable_restapi_actions(true);
+        set_enable_restapi_actions(true);
+    }
 }
 
 void MainWindow::set_enable_restapi_actions(bool enable)

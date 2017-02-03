@@ -7,8 +7,6 @@
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QProgressBar>
-#include <QtWidgets/QTreeWidget>
-#include <QtWidgets/QFileDialog>
 #include <QtCore/QStandardPaths>
 #include <QtGui/QCloseEvent>
 
@@ -20,7 +18,6 @@
 #include <Windows.h>
 #endif
 
-#include "restapi/resources/showbase.hpp"
 #include "restapi/restapi_client.hpp"
 #include "restapi/restapi_event.hpp"
 #include "restapi/resolve_message.hpp"
@@ -134,6 +131,28 @@ void MainWindow::update_scenegraph_tree(const rapidjson::Value& root_object)
     {
         BOOST_LOG_TRIVIAL(error) << "Invalid API specification.";
     }
+}
+
+void MainWindow::update_nodepath(const rapidjson::Value& message)
+{
+    const auto& translation = message["translation"];
+    ui_->translation_edit_x_->setText(QString().setNum(translation[0].GetFloat()));
+    ui_->translation_edit_y_->setText(QString().setNum(translation[1].GetFloat()));
+    ui_->translation_edit_z_->setText(QString().setNum(translation[2].GetFloat()));
+
+    const auto& hpr = message["hpr"];
+    ui_->hpr_edit_h_->setText(QString().setNum(hpr[0].GetFloat()));
+    ui_->hpr_edit_p_->setText(QString().setNum(hpr[1].GetFloat()));
+    ui_->hpr_edit_r_->setText(QString().setNum(hpr[2].GetFloat()));
+
+    const auto& scale = message["scale"];
+    ui_->scale_edit_x_->setText(QString().setNum(scale[0].GetFloat()));
+    ui_->scale_edit_y_->setText(QString().setNum(scale[1].GetFloat()));
+    ui_->scale_edit_z_->setText(QString().setNum(scale[2].GetFloat()));
+
+    ui_->visible_checkbox_->setChecked(message["visible"].GetBool());
+    ui_->tight_bounds_checkbox_->setChecked(message["tight_bounds"].GetBool());
+    ui_->wireframe_checkbox_->setChecked(message["wireframe"].GetBool());
 }
 
 void MainWindow::closeEvent(QCloseEvent* ev)
@@ -273,6 +292,19 @@ void MainWindow::setup_ui(void)
 
     setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);    // dock widget corner
 
+    // NodePath tab
+    ui_->translation_edit_x_->setValidator(new QDoubleValidator(ui_->translation_edit_x_));
+    ui_->translation_edit_y_->setValidator(new QDoubleValidator(ui_->translation_edit_y_));
+    ui_->translation_edit_z_->setValidator(new QDoubleValidator(ui_->translation_edit_z_));
+
+    ui_->hpr_edit_h_->setValidator(new QDoubleValidator(ui_->hpr_edit_h_));
+    ui_->hpr_edit_p_->setValidator(new QDoubleValidator(ui_->hpr_edit_p_));
+    ui_->hpr_edit_r_->setValidator(new QDoubleValidator(ui_->hpr_edit_r_));
+
+    ui_->scale_edit_x_->setValidator(new QDoubleValidator(ui_->scale_edit_x_));
+    ui_->scale_edit_y_->setValidator(new QDoubleValidator(ui_->scale_edit_y_));
+    ui_->scale_edit_z_->setValidator(new QDoubleValidator(ui_->scale_edit_z_));
+
 //    ui_->action_new_project->setShortcuts(QKeySequence::New);
 //
 //    ui_->action_save_project->setShortcuts(QKeySequence::Save);
@@ -290,21 +322,8 @@ void MainWindow::setup_ui(void)
 //        );
 //    });
 
-    connect(ui_->action_import_model_, &QAction::triggered, [this]() {
-        const std::string& file_path = QFileDialog::getOpenFileName(this, "Import Model", "", QString("All Files (*.*)")).toStdString();
-        restapi_client_->write(ShowBase::put_model(file_path));
-    });
-
-    connect(ui_->action_refresh_scenegraph_, &QAction::triggered, [this]() {
-        static std::string msg(
-            "{"
-            "\"resource\": \"CRModel/TWorld\","
-            "\"method\": \"GET\""
-            "}"
-        );
-
-        restapi_client_->write(msg);
-    });
+    connect(ui_->action_import_model_, &QAction::triggered, this, &MainWindow::import_model_tirggered);
+    connect(ui_->action_refresh_scenegraph_, &QAction::triggered, this, &MainWindow::refresh_scenegraph_triggered);
 
     ui_->action_exit->setShortcuts(QKeySequence::Quit);
 
@@ -323,27 +342,18 @@ void MainWindow::setup_ui(void)
         ui_->action_toggle_system_console_->setChecked(toggle_system_console());
     });
 #else
-// this action can be only used in Windows.
+    // this action can be only used in Windows.
     ui_->action_toggle_system_console_->setEnabled(false);
 #endif
 
     connect(ui_->action_about_qt, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
     connect(ui_->action_about_application, &QAction::triggered, this, &MainWindow::about_application);
-
-//    connect(ui_->project_tree, &QTreeWidget::itemActivated, [this](const QTreeWidgetItem* item, int column) {
-//        if (item->type() == int(ProjectTreeItemType::DIRECTORY))
-//            return;
-//
-//        boost::filesystem::path project_path = item->text(0).toStdString();
-//        while (item = item->parent())
-//        {
-//            project_path = boost::filesystem::path(item->text(0).toStdString()) / project_path;
-//        }
-//        load_project((core::project_dir_path / project_path).string());
-//    });
+    connect(ui_->scenegraph_tree_, &QTreeWidget::currentItemChanged, this, &MainWindow::on_scenegraph_item_changed);
 
     load_settings();
     update_ui();
+
+    set_enable_restapi_actions(false);
 
     ui_->status_bar->showMessage("Ready");
 }
@@ -357,14 +367,18 @@ void MainWindow::connect_rendering_server(void)
         restapi_client_ = new RestAPIClient(QUrl(QStringLiteral("ws://localhost:8888")), this);
 
         QObject::connect(restapi_client_, &RestAPIClient::closed, [this]() {
-            BOOST_LOG_TRIVIAL(info) << "Rendering server connection is closed.";
+            BOOST_LOG_TRIVIAL(info) << "Rendering server is disconnected.";
 
             restapi_client_->deleteLater();
             restapi_client_ = nullptr;
             set_enable_restapi_actions(false);
+
+            ui_->status_bar->showMessage("Rendering server is disconnected");
         });
 
         set_enable_restapi_actions(true);
+
+        ui_->status_bar->showMessage("Rendering server is connected");
     }
 }
 
@@ -372,6 +386,7 @@ void MainWindow::set_enable_restapi_actions(bool enable)
 {
     ui_->action_import_model_->setEnabled(enable);
     ui_->action_refresh_scenegraph_->setEnabled(enable);
+    ui_->nodepath_tab_->setEnabled(enable);
 }
 
 void MainWindow::about_application(void)

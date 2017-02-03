@@ -5,7 +5,10 @@
 #include <QMainWindow>
 
 #include <boost/property_tree/ptree.hpp>
-#include <rapidjson/document.h>
+
+#include "restapi/config.hpp"
+
+class QTreeWidgetItem;
 
 namespace Ui {
 class MainWindow;
@@ -37,9 +40,10 @@ public:
     void update_ui(void);
 
     void update_scenegraph_tree(const rapidjson::Value& root_object);
+    void update_nodepath(const rapidjson::Value& message);
 
 protected:
-    virtual void MainWindow::closeEvent(QCloseEvent* ev);
+    virtual void closeEvent(QCloseEvent* ev);
     virtual bool event(QEvent* ev) override;
 
 private:
@@ -60,6 +64,19 @@ private:
     void set_enable_restapi_actions(bool enable);
 
     void about_application(void);
+
+    /** RPEditor API */
+    ///@{
+
+    void import_model_tirggered(void);
+
+    void refresh_scenegraph_triggered(void);
+
+    void on_scenegraph_item_changed(const QTreeWidgetItem* item, const QTreeWidgetItem*);
+
+    void on_nodepath_changed(void);
+
+    ///@}
 
     Ui::MainWindow* ui_;
 

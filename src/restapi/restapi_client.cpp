@@ -2,6 +2,9 @@
 
 #include <QtCore/QCoreApplication>
 
+#include <rapidjson/writer.h>
+#include <rapidjson/stringbuffer.h>
+
 #include "main_window.hpp"
 #include "restapi_event.hpp"
 
@@ -12,6 +15,15 @@ RestAPIClient::RestAPIClient(const QUrl& url, QObject* parent): QObject(parent),
     connect(&socket_, &QWebSocket::connected, this, &RestAPIClient::on_connected);
     connect(&socket_, &QWebSocket::disconnected, this, &RestAPIClient::closed);
     socket_.open(QUrl(url_));
+}
+
+void RestAPIClient::write(const rapidjson::Document& doc)
+{
+    rapidjson::StringBuffer buffer;
+    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+    doc.Accept(writer);
+
+    write(std::string(buffer.GetString(), buffer.GetSize()));
 }
 
 void RestAPIClient::close(void)

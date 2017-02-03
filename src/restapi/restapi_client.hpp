@@ -3,6 +3,8 @@
 #include <QtCore/QObject>
 #include <QtWebSockets/QWebSocket>
 
+#include "restapi/config.hpp"
+
 namespace rpeditor {
 
 class RestAPIClient: public QObject
@@ -13,6 +15,8 @@ public:
     explicit RestAPIClient(const QUrl& url, QObject* parent = nullptr);
 
     void write(const std::string& json_msg);
+
+    void write(const rapidjson::Document& doc);
 
     void close(void);
 

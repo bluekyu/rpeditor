@@ -5,8 +5,8 @@ set(ui_src
 qt5_wrap_ui(source_ui ${ui_src})
 
 set(source_src_restapi_resources
+    "${PROJECT_SOURCE_DIR}/src/restapi/resources/nodepath.cpp"
     "${PROJECT_SOURCE_DIR}/src/restapi/resources/showbase.cpp"
-    "${PROJECT_SOURCE_DIR}/src/restapi/resources/showbase.hpp"
 )
 
 set(source_src_restapi
@@ -26,6 +26,7 @@ set(source_src
     "${PROJECT_SOURCE_DIR}/src/main.cpp"
     "${PROJECT_SOURCE_DIR}/src/main_window.cpp"
     "${PROJECT_SOURCE_DIR}/src/main_window.hpp"
+    "${PROJECT_SOURCE_DIR}/src/main_window_api.cpp"
 )
 
 source_group("ui" FILES ${ui_src} ${source_ui})

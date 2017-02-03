@@ -2,15 +2,16 @@
 
 #define RAPIDJSON_HAS_STDSTRING 1
 #include <rapidjson/document.h>
-#include <rapidjson/writer.h>
-#include <rapidjson/stringbuffer.h>
 
 namespace rpeditor {
 
-#define RESTAPI_RESOURCE_STRING "resource"
-#define RESTAPI_METHOD_STRING "method"
-#define RESTAPI_METHOD_PUT_STRING "PUT"
-#define RESTAPI_MESSAGE_STRING "message"
+#define RPEDITOR_API_RESOURCE_STRING "resource"
+#define RPEDITOR_API_METHOD_STRING "method"
+#define RPEDITOR_API_MESSAGE_STRING "message"
+
+#define RPEDITOR_API_CREATE_STRING "CREATE"
+#define RPEDITOR_API_READ_STRING "READ"
+#define RPEDITOR_API_UPDATE_STRING "UPDATE"
 
 #define ConfigureStaticInit(name) \
     class StaticInit ## name \
@@ -21,13 +22,19 @@ namespace rpeditor {
     static StaticInit ## name name_; \
     StaticInit ## name:: StaticInit ## name()
 
-inline std::string StringfyDocument(const rapidjson::Document& dom)
+
+/**
+ * @return 'message' JSON object.
+ */
+inline rapidjson::Value& initialize_api_document(rapidjson::Document& doc, const std::string& resource, const std::string& method)
 {
-    rapidjson::StringBuffer buffer;
-    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-    dom.Accept(writer);
-    
-    return std::string(buffer.GetString(), buffer.GetSize());
+    auto& allocator = doc.GetAllocator();
+    doc.SetObject();
+
+    doc.AddMember(RPEDITOR_API_RESOURCE_STRING, resource, allocator);
+    doc.AddMember(RPEDITOR_API_METHOD_STRING, method, allocator);
+    doc.AddMember(RPEDITOR_API_MESSAGE_STRING, rapidjson::Value(rapidjson::kObjectType).Move(), allocator);
+    return doc[RPEDITOR_API_MESSAGE_STRING];
 }
 
 }   // namespace rpeditor

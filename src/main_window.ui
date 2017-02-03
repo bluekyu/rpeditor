@@ -26,7 +26,10 @@
       <property name="currentIndex">
        <number>0</number>
       </property>
-      <widget class="QWidget" name="tab">
+      <widget class="QWidget" name="nodepath_tab_">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
        <attribute name="title">
         <string>NodePath</string>
        </attribute>
@@ -74,13 +77,13 @@
                <item row="0" column="1">
                 <layout class="QHBoxLayout" name="horizontalLayout_3">
                  <item>
-                  <widget class="QLineEdit" name="translation_line_z_"/>
+                  <widget class="QLineEdit" name="translation_edit_z_"/>
                  </item>
                  <item>
-                  <widget class="QLineEdit" name="translation_line_y_"/>
+                  <widget class="QLineEdit" name="translation_edit_y_"/>
                  </item>
                  <item>
-                  <widget class="QLineEdit" name="translation_line_x_"/>
+                  <widget class="QLineEdit" name="translation_edit_x_"/>
                  </item>
                 </layout>
                </item>
@@ -284,6 +287,9 @@
         <layout class="QHBoxLayout" name="horizontalLayout">
          <item>
           <widget class="QTreeWidget" name="scenegraph_tree_">
+           <property name="expandsOnDoubleClick">
+            <bool>false</bool>
+           </property>
            <column>
             <property name="text">
              <string>Name</string>
@@ -372,9 +378,6 @@
    </property>
   </action>
   <action name="action_import_model_">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
    <property name="text">
     <string>Import Model</string>
    </property>
@@ -383,11 +386,11 @@
    <property name="text">
     <string>Toggle System Console</string>
    </property>
+   <property name="whatsThis">
+    <string>Show or hide a system console window in ONLY Windows OS.</string>
+   </property>
   </action>
   <action name="action_refresh_scenegraph_">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
    <property name="text">
     <string>Refersh Scenegraph</string>
    </property>

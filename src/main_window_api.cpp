@@ -45,14 +45,14 @@ void MainWindow::import_model_tirggered(void)
 void MainWindow::refresh_scenegraph_triggered(void)
 {
     rapidjson::Document doc;
-    initialize_api_document(doc, "NodePath", RPEDITOR_API_READ_STRING);
+    initialize_api_document(doc, "ShowBase", RPEDITOR_API_READ_STRING);
     restapi_client_->write(doc);
 }
 
 void MainWindow::on_scenegraph_item_changed(const QTreeWidgetItem* item, const QTreeWidgetItem*)
 {
     rapidjson::Document doc;
-    rapidjson::Value& message = initialize_api_document(doc, "NodePath", "READ");
+    rapidjson::Value& message = initialize_api_document(doc, "NodePath", RPEDITOR_API_READ_STRING);
 
     QStringList node_name_list;
     const QTreeWidgetItem* current = item;

@@ -329,6 +329,22 @@ void MainWindow::setup_ui(void)
     ui_->scale_edit_y_->setValidator(new QDoubleValidator(ui_->scale_edit_y_));
     ui_->scale_edit_z_->setValidator(new QDoubleValidator(ui_->scale_edit_z_));
 
+    connect(ui_->translation_edit_x_, &QLineEdit::editingFinished, this, &MainWindow::on_nodepath_changed);
+    connect(ui_->translation_edit_y_, &QLineEdit::editingFinished, this, &MainWindow::on_nodepath_changed);
+    connect(ui_->translation_edit_z_, &QLineEdit::editingFinished, this, &MainWindow::on_nodepath_changed);
+
+    connect(ui_->hpr_edit_h_, &QLineEdit::editingFinished, this, &MainWindow::on_nodepath_changed);
+    connect(ui_->hpr_edit_p_, &QLineEdit::editingFinished, this, &MainWindow::on_nodepath_changed);
+    connect(ui_->hpr_edit_r_, &QLineEdit::editingFinished, this, &MainWindow::on_nodepath_changed);
+
+    connect(ui_->scale_edit_x_, &QLineEdit::editingFinished, this, &MainWindow::on_nodepath_changed);
+    connect(ui_->scale_edit_y_, &QLineEdit::editingFinished, this, &MainWindow::on_nodepath_changed);
+    connect(ui_->scale_edit_z_, &QLineEdit::editingFinished, this, &MainWindow::on_nodepath_changed);
+
+    connect(ui_->visible_checkbox_, &QCheckBox::toggled, this, &MainWindow::on_nodepath_changed);
+    connect(ui_->tight_bounds_checkbox_, &QCheckBox::toggled, this, &MainWindow::on_nodepath_changed);
+    connect(ui_->wireframe_checkbox_, &QCheckBox::toggled, this, &MainWindow::on_nodepath_changed);
+
 //    ui_->action_new_project->setShortcuts(QKeySequence::New);
 //
 //    ui_->action_save_project->setShortcuts(QKeySequence::Save);
@@ -411,6 +427,11 @@ void MainWindow::set_enable_restapi_actions(bool enable)
     ui_->action_import_model_->setEnabled(enable);
     ui_->action_refresh_scenegraph_->setEnabled(enable);
     ui_->nodepath_tab_->setEnabled(enable);
+
+    if (!enable)
+    {
+        ui_->scenegraph_tree_->clear();
+    }
 }
 
 void MainWindow::about_application(void)

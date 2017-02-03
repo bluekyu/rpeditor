@@ -77,13 +77,13 @@
                <item row="0" column="1">
                 <layout class="QHBoxLayout" name="horizontalLayout_3">
                  <item>
-                  <widget class="QLineEdit" name="translation_edit_z_"/>
+                  <widget class="QLineEdit" name="translation_edit_x_"/>
                  </item>
                  <item>
                   <widget class="QLineEdit" name="translation_edit_y_"/>
                  </item>
                  <item>
-                  <widget class="QLineEdit" name="translation_edit_x_"/>
+                  <widget class="QLineEdit" name="translation_edit_z_"/>
                  </item>
                 </layout>
                </item>

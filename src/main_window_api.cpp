@@ -28,9 +28,126 @@
 #include <QtWidgets/QTreeWidget>
 #include <QtWidgets/QFileDialog>
 
+#include <boost/log/trivial.hpp>
+
 #include "restapi/restapi_client.hpp"
 
 namespace rpeditor {
+
+void update_scenegraph_subtree(QTreeWidgetItem* parent, const rapidjson::Value& current)
+{
+    QTreeWidgetItem* item = new QTreeWidgetItem;
+    item->setText(0, current["name"].GetString());
+    item->setText(1, current["type"].GetString());
+
+    parent->addChild(item);
+
+    if (current["children"].IsArray())
+    {
+        for (const auto& child: current["children"].GetArray())
+            update_scenegraph_subtree(item, child);
+    }
+    else
+    {
+        BOOST_LOG_TRIVIAL(error) << "Invalid API specification.";
+    }
+}
+
+void MainWindow::update_scenegraph_tree(const rapidjson::Value& root_object)
+{
+    BOOST_LOG_TRIVIAL(debug) << "Update scenegraph in tree widget.";
+
+    ui_->scenegraph_tree_->clear();
+
+    QTreeWidgetItem* root_item = new QTreeWidgetItem;
+    root_item->setText(0, root_object["name"].GetString());
+    root_item->setText(1, root_object["type"].GetString());
+
+    ui_->scenegraph_tree_->addTopLevelItem(root_item);
+
+    if (root_object["children"].IsArray())
+    {
+        for (const auto& child: root_object["children"].GetArray())
+            update_scenegraph_subtree(root_item, child);
+    }
+    else
+    {
+        BOOST_LOG_TRIVIAL(error) << "Invalid API specification.";
+    }
+}
+
+void MainWindow::update_nodepath(const rapidjson::Value& message)
+{
+    const auto& translation = message["translation"];
+    ui_->translation_edit_x_->setText(QString().setNum(translation[0].GetFloat()));
+    ui_->translation_edit_y_->setText(QString().setNum(translation[1].GetFloat()));
+    ui_->translation_edit_z_->setText(QString().setNum(translation[2].GetFloat()));
+
+    const auto& hpr = message["hpr"];
+    ui_->hpr_edit_h_->setText(QString().setNum(hpr[0].GetFloat()));
+    ui_->hpr_edit_p_->setText(QString().setNum(hpr[1].GetFloat()));
+    ui_->hpr_edit_r_->setText(QString().setNum(hpr[2].GetFloat()));
+
+    const auto& scale = message["scale"];
+    ui_->scale_edit_x_->setText(QString().setNum(scale[0].GetFloat()));
+    ui_->scale_edit_y_->setText(QString().setNum(scale[1].GetFloat()));
+    ui_->scale_edit_z_->setText(QString().setNum(scale[2].GetFloat()));
+
+    ui_->visible_checkbox_->setChecked(message["visible"].GetBool());
+    ui_->tight_bounds_checkbox_->setChecked(message["tight_bounds"].GetBool());
+    ui_->wireframe_checkbox_->setChecked(message["wireframe"].GetBool());
+}
+
+void MainWindow::update_geometry(const rapidjson::Value& message)
+{
+    ui_->geometry_tab_->setEnabled(true);
+
+    const int num_geoms = message["num_geoms"].GetInt();
+    ui_->geometry_geom_index_spinbox_->setSuffix(QString(" th (%1 geoms)").arg(num_geoms));
+    ui_->geometry_geom_index_spinbox_->setMaximum(num_geoms-1);
+
+    const int geom_index = message["index"].GetInt();
+    ui_->geometry_geom_index_spinbox_->setValue(geom_index);
+
+    ui_->geom_num_primitives_label_->setText(QString().setNum(message["num_primitives"].GetInt()));
+}
+
+void MainWindow::update_material(const rapidjson::Value& message)
+{
+    ui_->material_tab_->setEnabled(true);
+
+    const int num_geoms = message["num_geoms"].GetInt();
+    ui_->material_geom_index_spinbox_->setSuffix(QString(" th (%1 geoms)").arg(num_geoms));
+    ui_->material_geom_index_spinbox_->setMaximum(num_geoms-1);
+
+    const int geom_index = message["index"].GetInt();
+    ui_->material_geom_index_spinbox_->setValue(geom_index);
+
+    ui_->material_name_label_->setText(QString::fromStdString(message["name"].GetString()));
+
+    ui_->material_shading_model_combobox_->setCurrentIndex(message["shading_model"].GetInt());
+
+    const auto& base_color = message["base_color"];
+    auto palette = ui_->material_base_color_dialog_button_->palette();
+    palette.setColor(QPalette::Button, QColor::fromRgbF(base_color[0].GetFloat(), base_color[1].GetFloat(), base_color[2].GetFloat()));
+    ui_->material_base_color_dialog_button_->setPalette(palette);
+
+    ui_->material_roughness_spinbox_->setValue(message["roughness"].GetFloat());
+    ui_->material_speuclar_ior_spinbox_->setValue(message["specular_ior"].GetFloat());
+}
+
+// ************************************************************************************************
+std::string MainWindow::get_scenegraph_item_node_path(const QTreeWidgetItem* item) const
+{
+    QStringList node_name_list;
+    while (item && item->parent())
+    {
+        node_name_list.push_front(item->text(0));
+        item = item->parent();
+    }
+
+    return node_name_list.join('/').toStdString();
+}
 
 void MainWindow::import_model_tirggered(void)
 {
@@ -49,21 +166,81 @@ void MainWindow::refresh_scenegraph_triggered(void)
     restapi_client_->write(doc);
 }
 
-void MainWindow::on_scenegraph_item_changed(const QTreeWidgetItem* item, const QTreeWidgetItem*)
+void MainWindow::on_nodepath_tab_selected(const QTreeWidgetItem* item)
 {
+    if (!restapi_client_)
+        return;
+
+    const std::string& node_path = get_scenegraph_item_node_path(item);
+
     rapidjson::Document doc;
     rapidjson::Value& message = initialize_api_document(doc, "NodePath", RPEDITOR_API_READ_STRING);
 
-    QStringList node_name_list;
-    const QTreeWidgetItem* current = item;
-    while (current && current->parent())
-    {
-        node_name_list.push_front(current->text(0));
-        current = current->parent();
-    }
-
-    message.AddMember("path", node_name_list.join('/').toStdString(), doc.GetAllocator());
+    message.AddMember("path", node_path, doc.GetAllocator());
     restapi_client_->write(doc);
+}
+
+void MainWindow::on_geometry_tab_selected(const QTreeWidgetItem* item)
+{
+    if (!restapi_client_)
+        return;
+
+    const std::string& node_path = get_scenegraph_item_node_path(item);
+
+    rapidjson::Document doc;
+    rapidjson::Value& message = initialize_api_document(doc, "GeomNode", RPEDITOR_API_READ_STRING);
+
+    message.AddMember("path", node_path, doc.GetAllocator());
+    message.AddMember("index", ui_->geometry_geom_index_spinbox_->value(), doc.GetAllocator());
+    restapi_client_->write(doc);
+}
+
+void MainWindow::on_material_tab_selected(const QTreeWidgetItem* item)
+{
+    if (!restapi_client_)
+        return;
+
+    const std::string& node_path = get_scenegraph_item_node_path(item);
+
+    rapidjson::Document doc;
+    rapidjson::Value& message = initialize_api_document(doc, "Material", RPEDITOR_API_READ_STRING);
+
+    message.AddMember("path", node_path, doc.GetAllocator());
+    message.AddMember("index", ui_->material_geom_index_spinbox_->value(), doc.GetAllocator());
+    restapi_client_->write(doc);
+}
+
+void MainWindow::on_scenegraph_item_changed(const QTreeWidgetItem* item)
+{
+    switch (ui_->main_tab_widget_->currentIndex())
+    {
+    case 0:
+        {
+            on_nodepath_tab_selected(item);
+            break;
+        }
+
+    case 1:
+        {
+            if (item->text(1) == "GeomNode")
+                on_geometry_tab_selected(item);
+            else
+                ui_->geometry_tab_->setEnabled(false);
+            break;
+        }
+
+    case 2:
+        {
+            if (item->text(1) == "GeomNode")
+                on_material_tab_selected(item);
+            else
+                ui_->material_tab_->setEnabled(false);
+            break;
+        }
+
+    default:
+        break;
+    }
 }
 
 void MainWindow::on_nodepath_changed(void)

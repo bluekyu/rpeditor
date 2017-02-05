@@ -65,6 +65,8 @@ public:
 
     void update_scenegraph_tree(const rapidjson::Value& root_object);
     void update_nodepath(const rapidjson::Value& message);
+    void update_geometry(const rapidjson::Value& message);
+    void update_material(const rapidjson::Value& message);
 
 protected:
     virtual void closeEvent(QCloseEvent* ev);
@@ -87,6 +89,8 @@ private:
 
     void set_enable_restapi_actions(bool enable);
 
+    std::string get_scenegraph_item_node_path(const QTreeWidgetItem* item) const;
+
     void about_application(void);
 
     /** RPEditor API */
@@ -96,7 +100,13 @@ private:
 
     void refresh_scenegraph_triggered(void);
 
-    void on_scenegraph_item_changed(const QTreeWidgetItem* item, const QTreeWidgetItem*);
+    void on_scenegraph_item_changed(const QTreeWidgetItem* item);
+
+    void on_nodepath_tab_selected(const QTreeWidgetItem* item);
+
+    void on_geometry_tab_selected(const QTreeWidgetItem* item);
+
+    void on_material_tab_selected(const QTreeWidgetItem* item);
 
     void on_nodepath_changed(void);
 

@@ -51,26 +51,6 @@ namespace rpeditor {
 
 static const char* SETTING_FILE_NAME = "config.json";
 
-void update_scenegraph_subtree(QTreeWidgetItem* parent, const rapidjson::Value& current)
-{
-    QTreeWidgetItem* item = new QTreeWidgetItem;
-    item->setText(0, current["name"].GetString());
-
-    parent->addChild(item);
-
-    if (current["children"].IsArray())
-    {
-        for (const auto& child: current["children"].GetArray())
-            update_scenegraph_subtree(item, child);
-    }
-    else
-    {
-        BOOST_LOG_TRIVIAL(error) << "Invalid API specification.";
-    }
-}
-
-// ************************************************************************************************
-
 bool MainWindow::is_shown_system_console_ = false;
 bool MainWindow::is_created_system_console_ = false;
 
@@ -136,50 +116,6 @@ void MainWindow::update_ui(void)
     }
 }
 
-void MainWindow::update_scenegraph_tree(const rapidjson::Value& root_object)
-{
-    BOOST_LOG_TRIVIAL(debug) << "Update scenegraph in tree widget.";
-
-    ui_->scenegraph_tree_->clear();
-
-    QTreeWidgetItem* root_item = new QTreeWidgetItem;
-    root_item->setText(0, root_object["name"].GetString());
-
-    ui_->scenegraph_tree_->addTopLevelItem(root_item);
-
-    if (root_object["children"].IsArray())
-    {
-        for (const auto& child: root_object["children"].GetArray())
-            update_scenegraph_subtree(root_item, child);
-    }
-    else
-    {
-        BOOST_LOG_TRIVIAL(error) << "Invalid API specification.";
-    }
-}
-
-void MainWindow::update_nodepath(const rapidjson::Value& message)
-{
-    const auto& translation = message["translation"];
-    ui_->translation_edit_x_->setText(QString().setNum(translation[0].GetFloat()));
-    ui_->translation_edit_y_->setText(QString().setNum(translation[1].GetFloat()));
-    ui_->translation_edit_z_->setText(QString().setNum(translation[2].GetFloat()));
-
-    const auto& hpr = message["hpr"];
-    ui_->hpr_edit_h_->setText(QString().setNum(hpr[0].GetFloat()));
-    ui_->hpr_edit_p_->setText(QString().setNum(hpr[1].GetFloat()));
-    ui_->hpr_edit_r_->setText(QString().setNum(hpr[2].GetFloat()));
-
-    const auto& scale = message["scale"];
-    ui_->scale_edit_x_->setText(QString().setNum(scale[0].GetFloat()));
-    ui_->scale_edit_y_->setText(QString().setNum(scale[1].GetFloat()));
-    ui_->scale_edit_z_->setText(QString().setNum(scale[2].GetFloat()));
-
-    ui_->visible_checkbox_->setChecked(message["visible"].GetBool());
-    ui_->tight_bounds_checkbox_->setChecked(message["tight_bounds"].GetBool());
-    ui_->wireframe_checkbox_->setChecked(message["wireframe"].GetBool());
-}
-
 void MainWindow::closeEvent(QCloseEvent* ev)
 {
     if (restapi_client_)
@@ -190,6 +126,7 @@ void MainWindow::closeEvent(QCloseEvent* ev)
 
     if (restapi_network_thread_ && restapi_network_thread_->joinable())
     {
+        BOOST_LOG_TRIVIAL(info) << "Wainting for exiting WebSocket network thread ...";
         restapi_network_thread_->join();
         restapi_network_thread_.reset();
 
@@ -197,7 +134,7 @@ void MainWindow::closeEvent(QCloseEvent* ev)
         //set_enable_restapi_actions(false);
     }
 
-    save_settings();
+    //save_settings();
 
 #if defined(BOOST_OS_WINDOWS)
     ShowWindow(GetConsoleWindow(), SW_HIDE);
@@ -316,6 +253,11 @@ void MainWindow::setup_ui(void)
 //    setup_project_tree(core::project_dir_path.string(), nullptr);
 
     setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);    // dock widget corner
+
+    connect(ui_->main_tab_widget_, &QTabWidget::currentChanged, [this](void) {
+        if (ui_->scenegraph_tree_->currentItem())
+            on_scenegraph_item_changed(ui_->scenegraph_tree_->currentItem());
+    });
 
     // NodePath tab
     ui_->translation_edit_x_->setValidator(new QDoubleValidator(ui_->translation_edit_x_));
@@ -465,6 +407,7 @@ void MainWindow::set_enable_restapi_actions(bool enable)
 
     if (!enable)
     {
+        ui_->geometry_tab_->setEnabled(enable);
         ui_->material_tab_->setEnabled(enable);
         ui_->scenegraph_tree_->clear();
     }

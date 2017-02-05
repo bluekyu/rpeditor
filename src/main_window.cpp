@@ -33,6 +33,7 @@
 #include <QtWidgets/QProgressBar>
 #include <QtCore/QStandardPaths>
 #include <QtGui/QCloseEvent>
+#include <QtWidgets/QColorDialog>
 
 #include <boost/log/trivial.hpp>
 #include <boost/property_tree/json_parser.hpp>
@@ -345,6 +346,40 @@ void MainWindow::setup_ui(void)
     connect(ui_->tight_bounds_checkbox_, &QCheckBox::toggled, this, &MainWindow::on_nodepath_changed);
     connect(ui_->wireframe_checkbox_, &QCheckBox::toggled, this, &MainWindow::on_nodepath_changed);
 
+    // Material tab
+    connect(ui_->material_base_color_dialog_button_, &QPushButton::pressed, [this]() {
+        auto palette = ui_->material_base_color_dialog_button_->palette();
+
+        const auto& color = QColorDialog::getColor(palette.color(QPalette::Button), this, "Base Color Dialog");
+        if (!color.isValid())
+            return;
+
+        palette.setColor(QPalette::Button, color);
+        ui_->material_base_color_dialog_button_->setPalette(palette);
+    });
+
+    connect(ui_->material_roughness_slider_, &QSlider::valueChanged, [this](int value) {
+        ui_->material_roughness_spinbox_->setValue(value / 100.0);
+    });
+    connect(ui_->material_roughness_spinbox_, QOverload<double>::of(&QDoubleSpinBox::valueChanged), [this](double value) {
+        ui_->material_roughness_slider_->setValue(value * 100.0);
+    });
+
+    connect(ui_->material_speuclar_ior_slider_, &QSlider::valueChanged, [this](int value) {
+        ui_->material_speuclar_ior_spinbox_->setValue(value / 100.0);
+    });
+    connect(ui_->material_speuclar_ior_spinbox_, QOverload<double>::of(&QDoubleSpinBox::valueChanged), [this](double value) {
+        ui_->material_speuclar_ior_slider_->setValue(value * 100.0);
+    });
+
+    connect(ui_->material_normal_strength_slider_, &QSlider::valueChanged, [this](int value) {
+        ui_->material_normal_strength_spinbox_->setValue(value / 100.0);
+    });
+    connect(ui_->material_normal_strength_spinbox_, QOverload<double>::of(&QDoubleSpinBox::valueChanged), [this](double value) {
+        ui_->material_normal_strength_slider_->setValue(value * 100.0);
+    });
+
+
 //    ui_->action_new_project->setShortcuts(QKeySequence::New);
 //
 //    ui_->action_save_project->setShortcuts(QKeySequence::Save);
@@ -430,6 +465,7 @@ void MainWindow::set_enable_restapi_actions(bool enable)
 
     if (!enable)
     {
+        ui_->material_tab_->setEnabled(enable);
         ui_->scenegraph_tree_->clear();
     }
 }

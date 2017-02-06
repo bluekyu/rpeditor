@@ -29,6 +29,9 @@ set(source_src
     "${PROJECT_SOURCE_DIR}/src/main_window.cpp"
     "${PROJECT_SOURCE_DIR}/src/main_window.hpp"
     "${PROJECT_SOURCE_DIR}/src/main_window_api.cpp"
+    "${PROJECT_SOURCE_DIR}/src/main_window_material_api.cpp"
+    "${PROJECT_SOURCE_DIR}/src/main_window_nodepath_api.cpp"
+    "${PROJECT_SOURCE_DIR}/src/main_window_showbase_api.cpp"
 )
 
 source_group("ui" FILES ${ui_src} ${source_ui})

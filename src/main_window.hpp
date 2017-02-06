@@ -25,7 +25,6 @@
 #pragma once
 
 #include <thread>
-#include <deque>
 
 #include <QMainWindow>
 
@@ -90,12 +89,11 @@ private:
 
     void set_enable_restapi_actions(bool enable);
 
-    void get_scenegraph_item_node_path(std::deque<int>& index_array, QTreeWidgetItem* item) const;
-
     void about_application(void);
 
     /** RPEditor API */
     ///@{
+    void add_member_scenegraph_item_path(rapidjson::Value& message, rapidjson::MemoryPoolAllocator<>& allocator, QTreeWidgetItem* item) const;
 
     void import_model_tirggered(void);
 
@@ -105,11 +103,11 @@ private:
 
     void on_nodepath_tab_selected(QTreeWidgetItem* item);
 
+    void on_nodepath_changed(void);
+
     void on_geometry_tab_selected(QTreeWidgetItem* item);
 
     void on_material_tab_selected(QTreeWidgetItem* item);
-
-    void on_nodepath_changed(void);
 
     void on_material_changed(void);
 

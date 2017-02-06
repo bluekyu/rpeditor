@@ -24,12 +24,9 @@
     <item>
      <widget class="QTabWidget" name="main_tab_widget_">
       <property name="currentIndex">
-       <number>2</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="nodepath_tab_">
-       <property name="enabled">
-        <bool>true</bool>
-       </property>
        <attribute name="title">
         <string>NodePath</string>
        </attribute>

@@ -37,7 +37,7 @@ namespace rpeditor {
 
 void MainWindow::update_geometry(const rapidjson::Value& message)
 {
-    ui_->geometry_tab_->setEnabled(true);
+    ui_->main_tab_widget_->setTabEnabled(MainTabIndex::GEOMETRY, true);
 
     const int num_geoms = message["num_geoms"].GetInt();
     ui_->geometry_geom_index_spinbox_->setSuffix(QString(" th (%1 geoms)").arg(num_geoms));
@@ -96,7 +96,7 @@ void MainWindow::on_scenegraph_item_changed(QTreeWidgetItem* item)
             if (item->text(1) == "GeomNode")
                 on_geometry_tab_selected(item);
             else
-                ui_->geometry_tab_->setEnabled(false);
+                ui_->main_tab_widget_->setTabEnabled(MainTabIndex::GEOMETRY, false);
             break;
         }
 
@@ -105,7 +105,7 @@ void MainWindow::on_scenegraph_item_changed(QTreeWidgetItem* item)
             if (item->text(1) == "GeomNode")
                 on_material_tab_selected(item);
             else
-                ui_->material_tab_->setEnabled(false);
+                ui_->main_tab_widget_->setTabEnabled(MainTabIndex::MATERIAL, false);
             break;
         }
 

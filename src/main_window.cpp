@@ -419,12 +419,12 @@ void MainWindow::set_enable_restapi_actions(bool enable)
 {
     ui_->action_import_model_->setEnabled(enable);
     ui_->action_refresh_scenegraph_->setEnabled(enable);
-    ui_->nodepath_tab_->setEnabled(enable);
+    ui_->main_tab_widget_->setTabEnabled(MainTabIndex::NODEPATH, enable);
 
     if (!enable)
     {
-        ui_->geometry_tab_->setEnabled(enable);
-        ui_->material_tab_->setEnabled(enable);
+        ui_->main_tab_widget_->setTabEnabled(MainTabIndex::GEOMETRY, enable);
+        ui_->main_tab_widget_->setTabEnabled(MainTabIndex::MATERIAL, enable);
         ui_->scenegraph_tree_->clear();
     }
 }

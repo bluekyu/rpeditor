@@ -48,6 +48,14 @@ class MainWindow: public QMainWindow
 {
     Q_OBJECT
 
+private:
+    enum MainTabIndex: int
+    {
+        NODEPATH = 0,
+        GEOMETRY,
+        MATERIAL,
+    };
+
 public:
     static MainWindow* get_instance(void)
     {

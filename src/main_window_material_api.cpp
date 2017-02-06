@@ -35,7 +35,7 @@ namespace rpeditor {
 
 void MainWindow::update_material(const rapidjson::Value& message)
 {
-    ui_->material_tab_->setEnabled(true);
+    ui_->main_tab_widget_->setTabEnabled(MainTabIndex::MATERIAL, true);
 
     const int num_geoms = message["num_geoms"].GetInt();
     ui_->material_geom_index_spinbox_->setSuffix(QString(" th (%1 geoms)").arg(num_geoms));

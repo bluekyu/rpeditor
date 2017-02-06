@@ -25,6 +25,7 @@
 #pragma once
 
 #include <thread>
+#include <deque>
 
 #include <QMainWindow>
 
@@ -89,7 +90,7 @@ private:
 
     void set_enable_restapi_actions(bool enable);
 
-    std::string get_scenegraph_item_node_path(const QTreeWidgetItem* item) const;
+    void get_scenegraph_item_node_path(std::deque<int>& index_array, QTreeWidgetItem* item) const;
 
     void about_application(void);
 
@@ -100,15 +101,17 @@ private:
 
     void refresh_scenegraph_triggered(void);
 
-    void on_scenegraph_item_changed(const QTreeWidgetItem* item);
+    void on_scenegraph_item_changed(QTreeWidgetItem* item);
 
-    void on_nodepath_tab_selected(const QTreeWidgetItem* item);
+    void on_nodepath_tab_selected(QTreeWidgetItem* item);
 
-    void on_geometry_tab_selected(const QTreeWidgetItem* item);
+    void on_geometry_tab_selected(QTreeWidgetItem* item);
 
-    void on_material_tab_selected(const QTreeWidgetItem* item);
+    void on_material_tab_selected(QTreeWidgetItem* item);
 
     void on_nodepath_changed(void);
+
+    void on_material_changed(void);
 
     ///@}
 

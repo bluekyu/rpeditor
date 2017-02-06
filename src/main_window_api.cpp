@@ -137,16 +137,14 @@ void MainWindow::update_material(const rapidjson::Value& message)
 }
 
 // ************************************************************************************************
-std::string MainWindow::get_scenegraph_item_node_path(const QTreeWidgetItem* item) const
+void MainWindow::get_scenegraph_item_node_path(std::deque<int>& index_array, QTreeWidgetItem* item) const
 {
     QStringList node_name_list;
     while (item && item->parent())
     {
-        node_name_list.push_front(item->text(0));
+        index_array.push_front(item->parent()->indexOfChild(item));
         item = item->parent();
     }
-
-    return node_name_list.join('/').toStdString();
 }
 
 void MainWindow::import_model_tirggered(void)
@@ -166,51 +164,69 @@ void MainWindow::refresh_scenegraph_triggered(void)
     restapi_client_->write(doc);
 }
 
-void MainWindow::on_nodepath_tab_selected(const QTreeWidgetItem* item)
+void MainWindow::on_nodepath_tab_selected(QTreeWidgetItem* item)
 {
     if (!restapi_client_)
         return;
-
-    const std::string& node_path = get_scenegraph_item_node_path(item);
 
     rapidjson::Document doc;
     rapidjson::Value& message = initialize_api_document(doc, "NodePath", RPEDITOR_API_READ_STRING);
+    auto& allocator = doc.GetAllocator();
 
-    message.AddMember("path", node_path, doc.GetAllocator());
+    std::deque<int> index_array;
+    get_scenegraph_item_node_path(index_array, item);
+
+    rapidjson::Value json_index_array(rapidjson::kArrayType);
+    for (int index: index_array)
+        json_index_array.PushBack(index, allocator);
+    message.AddMember("path", json_index_array, allocator);
+
     restapi_client_->write(doc);
 }
 
-void MainWindow::on_geometry_tab_selected(const QTreeWidgetItem* item)
+void MainWindow::on_geometry_tab_selected(QTreeWidgetItem* item)
 {
     if (!restapi_client_)
         return;
 
-    const std::string& node_path = get_scenegraph_item_node_path(item);
-
     rapidjson::Document doc;
     rapidjson::Value& message = initialize_api_document(doc, "GeomNode", RPEDITOR_API_READ_STRING);
+    auto& allocator = doc.GetAllocator();
 
-    message.AddMember("path", node_path, doc.GetAllocator());
+    std::deque<int> index_array;
+    get_scenegraph_item_node_path(index_array, item);
+
+    rapidjson::Value json_index_array(rapidjson::kArrayType);
+    for (int index: index_array)
+        json_index_array.PushBack(index, allocator);
+    message.AddMember("path", json_index_array, allocator);
+
     message.AddMember("index", ui_->geometry_geom_index_spinbox_->value(), doc.GetAllocator());
     restapi_client_->write(doc);
 }
 
-void MainWindow::on_material_tab_selected(const QTreeWidgetItem* item)
+void MainWindow::on_material_tab_selected(QTreeWidgetItem* item)
 {
     if (!restapi_client_)
         return;
 
-    const std::string& node_path = get_scenegraph_item_node_path(item);
-
     rapidjson::Document doc;
     rapidjson::Value& message = initialize_api_document(doc, "Material", RPEDITOR_API_READ_STRING);
+    auto& allocator = doc.GetAllocator();
 
-    message.AddMember("path", node_path, doc.GetAllocator());
+    std::deque<int> index_array;
+    get_scenegraph_item_node_path(index_array, item);
+
+    rapidjson::Value json_index_array(rapidjson::kArrayType);
+    for (int index: index_array)
+        json_index_array.PushBack(index, allocator);
+    message.AddMember("path", json_index_array, allocator);
+
     message.AddMember("index", ui_->material_geom_index_spinbox_->value(), doc.GetAllocator());
     restapi_client_->write(doc);
 }
 
-void MainWindow::on_scenegraph_item_changed(const QTreeWidgetItem* item)
+void MainWindow::on_scenegraph_item_changed(QTreeWidgetItem* item)
 {
     switch (ui_->main_tab_widget_->currentIndex())
     {
@@ -249,14 +265,13 @@ void MainWindow::on_nodepath_changed(void)
     rapidjson::Value& message = initialize_api_document(doc, "NodePath", RPEDITOR_API_UPDATE_STRING);
     auto& allocator = doc.GetAllocator();
 
-    QStringList node_name_list;
-    const QTreeWidgetItem* current = ui_->scenegraph_tree_->currentItem();
-    while (current && current->parent())
-    {
-        node_name_list.push_front(current->text(0));
-        current = current->parent();
-    }
-    message.AddMember("path", node_name_list.join('/').toStdString(), allocator);
+    std::deque<int> index_array;
+    get_scenegraph_item_node_path(index_array, ui_->scenegraph_tree_->currentItem());
+
+    rapidjson::Value json_index_array(rapidjson::kArrayType);
+    for (int index: index_array)
+        json_index_array.PushBack(index, allocator);
+    message.AddMember("path", json_index_array, allocator);
 
     // pose
     rapidjson::Value translation_array(rapidjson::kArrayType);
@@ -281,6 +296,39 @@ void MainWindow::on_nodepath_changed(void)
     message.AddMember("visible", ui_->visible_checkbox_->isChecked(), allocator);
     message.AddMember("tight_bounds", ui_->tight_bounds_checkbox_->isChecked(), allocator);
     message.AddMember("wireframe", ui_->wireframe_checkbox_->isChecked(), allocator);
+
+    restapi_client_->write(doc);
+}
+
+void MainWindow::on_material_changed(void)
+{
+    rapidjson::Document doc;
+    rapidjson::Value& message = initialize_api_document(doc, "Material", RPEDITOR_API_UPDATE_STRING);
+    auto& allocator = doc.GetAllocator();
+
+    std::deque<int> index_array;
+    get_scenegraph_item_node_path(index_array, ui_->scenegraph_tree_->currentItem());
+
+    rapidjson::Value json_index_array(rapidjson::kArrayType);
+    for (int index : index_array)
+        json_index_array.PushBack(index, allocator);
+    message.AddMember("path", json_index_array, allocator);
+
+    message.AddMember("index", ui_->material_geom_index_spinbox_->value(), allocator);
+
+    message.AddMember("shading_model", ui_->material_shading_model_combobox_->currentIndex(), allocator);
+
+    qreal r, g, b;
+    ui_->material_base_color_dialog_button_->palette().color(QPalette::Button).getRgbF(&r, &g, &b);
+
+    rapidjson::Value base_color_array(rapidjson::kArrayType);
+    base_color_array.PushBack(r, allocator);
+    base_color_array.PushBack(g, allocator);
+    base_color_array.PushBack(b, allocator);
+    message.AddMember("base_color", base_color_array, allocator);
+
+    message.AddMember("roughness", ui_->material_roughness_spinbox_->value(), allocator);
+    message.AddMember("specular_ior", ui_->material_speuclar_ior_spinbox_->value(), allocator);
 
     restapi_client_->write(doc);
 }

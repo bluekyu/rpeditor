@@ -255,8 +255,8 @@ void MainWindow::setup_ui(void)
     setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);    // dock widget corner
 
     connect(ui_->main_tab_widget_, &QTabWidget::currentChanged, [this](void) {
-        if (ui_->scenegraph_tree_->currentItem())
-            on_scenegraph_item_changed(ui_->scenegraph_tree_->currentItem());
+        if (QTreeWidgetItem* item = ui_->scenegraph_tree_->currentItem())
+            on_scenegraph_item_changed(item);
     });
 
     // NodePath tab
@@ -288,7 +288,20 @@ void MainWindow::setup_ui(void)
     connect(ui_->tight_bounds_checkbox_, &QCheckBox::toggled, this, &MainWindow::on_nodepath_changed);
     connect(ui_->wireframe_checkbox_, &QCheckBox::toggled, this, &MainWindow::on_nodepath_changed);
 
+    // Geometry tab
+    connect(ui_->geometry_geom_index_spinbox_, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
+        if (QTreeWidgetItem* item = ui_->scenegraph_tree_->currentItem())
+            on_geometry_tab_selected(item);
+    });
+
     // Material tab
+    connect(ui_->material_geom_index_spinbox_, QOverload<int>::of(&QSpinBox::valueChanged), [this](int value) {
+        if (QTreeWidgetItem* item = ui_->scenegraph_tree_->currentItem())
+            on_material_tab_selected(item);
+    });
+
+    connect(ui_->material_shading_model_combobox_, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &MainWindow::on_material_changed);
+
     connect(ui_->material_base_color_dialog_button_, &QPushButton::pressed, [this]() {
         auto palette = ui_->material_base_color_dialog_button_->palette();
 
@@ -298,6 +311,7 @@ void MainWindow::setup_ui(void)
 
         palette.setColor(QPalette::Button, color);
         ui_->material_base_color_dialog_button_->setPalette(palette);
+        on_material_changed();
     });
 
     connect(ui_->material_roughness_slider_, &QSlider::valueChanged, [this](int value) {
@@ -305,6 +319,7 @@ void MainWindow::setup_ui(void)
     });
     connect(ui_->material_roughness_spinbox_, QOverload<double>::of(&QDoubleSpinBox::valueChanged), [this](double value) {
         ui_->material_roughness_slider_->setValue(value * 100.0);
+        on_material_changed();
     });
 
     connect(ui_->material_speuclar_ior_slider_, &QSlider::valueChanged, [this](int value) {
@@ -312,6 +327,7 @@ void MainWindow::setup_ui(void)
     });
     connect(ui_->material_speuclar_ior_spinbox_, QOverload<double>::of(&QDoubleSpinBox::valueChanged), [this](double value) {
         ui_->material_speuclar_ior_slider_->setValue(value * 100.0);
+        on_material_changed();
     });
 
     connect(ui_->material_normal_strength_slider_, &QSlider::valueChanged, [this](int value) {
@@ -319,8 +335,8 @@ void MainWindow::setup_ui(void)
     });
     connect(ui_->material_normal_strength_spinbox_, QOverload<double>::of(&QDoubleSpinBox::valueChanged), [this](double value) {
         ui_->material_normal_strength_slider_->setValue(value * 100.0);
+        on_material_changed();
     });
-
 
 //    ui_->action_new_project->setShortcuts(QKeySequence::New);
 //

@@ -194,8 +194,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>619</width>
-             <height>425</height>
+             <width>147</width>
+             <height>96</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_7">
@@ -269,8 +269,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>619</width>
-             <height>425</height>
+             <width>210</width>
+             <height>270</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -585,7 +585,7 @@
     <bool>false</bool>
    </attribute>
   </widget>
-  <widget class="QStatusBar" name="status_bar"/>
+  <widget class="QStatusBar" name="status_bar_"/>
   <widget class="QDockWidget" name="dock_widget_project">
    <property name="sizePolicy">
     <sizepolicy hsizetype="Preferred" vsizetype="Preferred">

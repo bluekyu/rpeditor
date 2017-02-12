@@ -78,28 +78,21 @@ void MainWindow::on_geometry_tab_selected(QTreeWidgetItem* item)
 
 void MainWindow::on_scenegraph_item_changed(QTreeWidgetItem* item)
 {
-    if (item->text(1) == "GeomNode")
-    {
-        ui_->main_tab_widget_->setTabEnabled(MainTabIndex::GEOMETRY, true);
-        ui_->main_tab_widget_->setTabEnabled(MainTabIndex::MATERIAL, true);
-    }
-    else
-    {
-        ui_->main_tab_widget_->setTabEnabled(MainTabIndex::GEOMETRY, false);
-        ui_->main_tab_widget_->setTabEnabled(MainTabIndex::MATERIAL, false);
-    }
+    bool is_geometry_node = item->text(1) == "GeomNode";
+    ui_->geometry_tab_->setEnabled(is_geometry_node);
+    ui_->material_tab_->setEnabled(is_geometry_node);
 
     switch (ui_->main_tab_widget_->currentIndex())
     {
-    case 0:
+    case MainTabIndex::NODEPATH:
         on_nodepath_tab_selected(item);
         break;
 
-    case 1:
+    case MainTabIndex::GEOMETRY:
         on_geometry_tab_selected(item);
         break;
 
-    case 2:
+    case MainTabIndex::MATERIAL:
         on_material_tab_selected(item);
         break;
 

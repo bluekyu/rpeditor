@@ -30,7 +30,7 @@
 
 namespace rpeditor {
 
-void resolve_nodepath(const rapidjson::Document& doc)
+bool resolve_nodepath(const rapidjson::Document& doc)
 {
     const std::string& method = doc[RPEDITOR_API_METHOD_STRING].GetString();
     if (method == RPEDITOR_API_UPDATE_STRING)
@@ -40,7 +40,10 @@ void resolve_nodepath(const rapidjson::Document& doc)
     else
     {
         BOOST_LOG_TRIVIAL(error) << "Unknown method: " << method;
+        return false;
     }
+
+    return true;
 }
 
 // ************************************************************************************************

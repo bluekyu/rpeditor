@@ -31,7 +31,7 @@
 
 namespace rpeditor {
 
-using ResolverMapType = std::unordered_map<std::string, void(*)(const rapidjson::Document&)>;
+using ResolverMapType = std::unordered_map<std::string, bool(*)(const rapidjson::Document&)>;
 
 ResolverMapType& get_resolver_map(void);
 

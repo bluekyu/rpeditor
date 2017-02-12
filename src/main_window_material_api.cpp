@@ -46,13 +46,22 @@ void MainWindow::update_material(const rapidjson::Value& message)
 
     ui_->material_shading_model_combobox_->setCurrentIndex(message["shading_model"].GetInt());
 
+    bool metallic = message["metallic"].GetBool();
+    ui_->material_matallic_checkbox_->setChecked(metallic);
+
     const auto& base_color = message["base_color"];
     auto palette = ui_->material_base_color_dialog_button_->palette();
     palette.setColor(QPalette::Button, QColor::fromRgbF(base_color[0].GetFloat(), base_color[1].GetFloat(), base_color[2].GetFloat()));
     ui_->material_base_color_dialog_button_->setPalette(palette);
 
-    ui_->material_roughness_spinbox_->setValue(message["roughness"].GetFloat());
-    ui_->material_speuclar_ior_spinbox_->setValue(message["specular_ior"].GetFloat());
+    ui_->material_roughness_slider_->setValue(message["roughness"].GetFloat());
+
+    ui_->material_speuclar_ior_slider_->setEnabled(!metallic);
+    ui_->material_speuclar_ior_spinbox_->setEnabled(!metallic);
+    if (!metallic)
+    {
+        ui_->material_speuclar_ior_slider_->setValue(message["specular_ior"].GetFloat());
+    }
 }
 
 void MainWindow::on_material_tab_selected(QTreeWidgetItem* item)
@@ -78,6 +87,8 @@ void MainWindow::on_material_changed(void)
     message.AddMember("index", ui_->material_geom_index_spinbox_->value(), allocator);
 
     message.AddMember("shading_model", ui_->material_shading_model_combobox_->currentIndex(), allocator);
+
+    message.AddMember("metallic", ui_->material_matallic_checkbox_->isChecked(), allocator);
 
     qreal r, g, b;
     ui_->material_base_color_dialog_button_->palette().color(QPalette::Button).getRgbF(&r, &g, &b);

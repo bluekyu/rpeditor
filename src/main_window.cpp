@@ -248,8 +248,8 @@ void MainWindow::setup_ui(void)
 {
 //    progress_bar = new QProgressBar(this);
 //    progress_bar->setRange(0, 100);
-//    ui_->status_bar->addPermanentWidget(progress_bar);
-//
+//    ui_->status_bar_->addPermanentWidget(progress_bar);
+
 //    setup_project_tree(core::project_dir_path.string(), nullptr);
 
     setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);    // dock widget corner
@@ -300,7 +300,7 @@ void MainWindow::setup_ui(void)
             on_material_tab_selected(item);
     });
 
-    connect(ui_->material_shading_model_combobox_, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &MainWindow::on_material_changed);
+    connect(ui_->material_shading_model_combobox_, QOverload<int>::of(&QComboBox::activated), this, &MainWindow::on_material_changed);
 
     connect(ui_->material_base_color_dialog_button_, &QPushButton::pressed, [this]() {
         auto palette = ui_->material_base_color_dialog_button_->palette();
@@ -388,7 +388,7 @@ void MainWindow::setup_ui(void)
 
     set_enable_restapi_actions(false);
 
-    ui_->status_bar->showMessage("Ready");
+    ui_->status_bar_->showMessage("Ready");
 }
 
 void MainWindow::connect_rendering_server(void)
@@ -406,12 +406,12 @@ void MainWindow::connect_rendering_server(void)
             restapi_client_ = nullptr;
             set_enable_restapi_actions(false);
 
-            ui_->status_bar->showMessage("Rendering server is disconnected");
+            ui_->status_bar_->showMessage("Rendering server is disconnected");
         });
 
         set_enable_restapi_actions(true);
 
-        ui_->status_bar->showMessage("Rendering server is connected");
+        ui_->status_bar_->showMessage("Rendering server is connected");
     }
 }
 
@@ -419,12 +419,12 @@ void MainWindow::set_enable_restapi_actions(bool enable)
 {
     ui_->action_import_model_->setEnabled(enable);
     ui_->action_refresh_scenegraph_->setEnabled(enable);
-    ui_->main_tab_widget_->setTabEnabled(MainTabIndex::NODEPATH, enable);
+    ui_->nodepath_tab_->setEnabled(enable);
 
     if (!enable)
     {
-        ui_->main_tab_widget_->setTabEnabled(MainTabIndex::GEOMETRY, enable);
-        ui_->main_tab_widget_->setTabEnabled(MainTabIndex::MATERIAL, enable);
+        ui_->geometry_tab_->setEnabled(enable);
+        ui_->material_tab_->setEnabled(enable);
         ui_->scenegraph_tree_->clear();
     }
 }

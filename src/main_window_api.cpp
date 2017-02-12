@@ -89,11 +89,13 @@ void MainWindow::on_scenegraph_item_changed(QTreeWidgetItem* item)
         break;
 
     case MainTabIndex::GEOMETRY:
-        on_geometry_tab_selected(item);
+        if (is_geometry_node)
+            on_geometry_tab_selected(item);
         break;
 
     case MainTabIndex::MATERIAL:
-        on_material_tab_selected(item);
+        if (is_geometry_node)
+            on_material_tab_selected(item);
         break;
 
     default:

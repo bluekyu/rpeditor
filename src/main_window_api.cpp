@@ -37,8 +37,6 @@ namespace rpeditor {
 
 void MainWindow::update_geometry(const rapidjson::Value& message)
 {
-    ui_->main_tab_widget_->setTabEnabled(MainTabIndex::GEOMETRY, true);
-
     const int num_geoms = message["num_geoms"].GetInt();
     ui_->geometry_geom_index_spinbox_->setSuffix(QString(" th (%1 geoms)").arg(num_geoms));
     ui_->geometry_geom_index_spinbox_->setMaximum(num_geoms-1);
@@ -68,9 +66,6 @@ void MainWindow::add_member_scenegraph_item_path(rapidjson::Value& message, rapi
 
 void MainWindow::on_geometry_tab_selected(QTreeWidgetItem* item)
 {
-    if (!restapi_client_)
-        return;
-
     rapidjson::Document doc;
     rapidjson::Value& message = initialize_api_document(doc, "GeomNode", RPEDITOR_API_READ_STRING);
     auto& allocator = doc.GetAllocator();
@@ -83,31 +78,30 @@ void MainWindow::on_geometry_tab_selected(QTreeWidgetItem* item)
 
 void MainWindow::on_scenegraph_item_changed(QTreeWidgetItem* item)
 {
+    if (item->text(1) == "GeomNode")
+    {
+        ui_->main_tab_widget_->setTabEnabled(MainTabIndex::GEOMETRY, true);
+        ui_->main_tab_widget_->setTabEnabled(MainTabIndex::MATERIAL, true);
+    }
+    else
+    {
+        ui_->main_tab_widget_->setTabEnabled(MainTabIndex::GEOMETRY, false);
+        ui_->main_tab_widget_->setTabEnabled(MainTabIndex::MATERIAL, false);
+    }
+
     switch (ui_->main_tab_widget_->currentIndex())
     {
     case 0:
-        {
-            on_nodepath_tab_selected(item);
-            break;
-        }
+        on_nodepath_tab_selected(item);
+        break;
 
     case 1:
-        {
-            if (item->text(1) == "GeomNode")
-                on_geometry_tab_selected(item);
-            else
-                ui_->main_tab_widget_->setTabEnabled(MainTabIndex::GEOMETRY, false);
-            break;
-        }
+        on_geometry_tab_selected(item);
+        break;
 
     case 2:
-        {
-            if (item->text(1) == "GeomNode")
-                on_material_tab_selected(item);
-            else
-                ui_->main_tab_widget_->setTabEnabled(MainTabIndex::MATERIAL, false);
-            break;
-        }
+        on_material_tab_selected(item);
+        break;
 
     default:
         break;

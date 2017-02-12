@@ -35,8 +35,6 @@ namespace rpeditor {
 
 void MainWindow::update_material(const rapidjson::Value& message)
 {
-    ui_->main_tab_widget_->setTabEnabled(MainTabIndex::MATERIAL, true);
-
     const int num_geoms = message["num_geoms"].GetInt();
     ui_->material_geom_index_spinbox_->setSuffix(QString(" th (%1 geoms)").arg(num_geoms));
     ui_->material_geom_index_spinbox_->setMaximum(num_geoms-1);
@@ -59,9 +57,6 @@ void MainWindow::update_material(const rapidjson::Value& message)
 
 void MainWindow::on_material_tab_selected(QTreeWidgetItem* item)
 {
-    if (!restapi_client_)
-        return;
-
     rapidjson::Document doc;
     rapidjson::Value& message = initialize_api_document(doc, "Material", RPEDITOR_API_READ_STRING);
     auto& allocator = doc.GetAllocator();

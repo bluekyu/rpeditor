@@ -57,9 +57,6 @@ void MainWindow::update_nodepath(const rapidjson::Value& message)
 
 void MainWindow::on_nodepath_tab_selected(QTreeWidgetItem* item)
 {
-    if (!restapi_client_)
-        return;
-
     rapidjson::Document doc;
     rapidjson::Value& message = initialize_api_document(doc, "NodePath", RPEDITOR_API_READ_STRING);
     auto& allocator = doc.GetAllocator();

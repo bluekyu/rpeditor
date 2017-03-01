@@ -40,28 +40,39 @@ void MainWindow::update_material(const rapidjson::Value& message)
     ui_->material_geom_index_spinbox_->setMaximum(num_geoms-1);
 
     const int geom_index = message["index"].GetInt();
+    ui_->material_geom_index_spinbox_->blockSignals(true);
     ui_->material_geom_index_spinbox_->setValue(geom_index);
+    ui_->material_geom_index_spinbox_->blockSignals(false);
 
     ui_->material_name_label_->setText(QString::fromStdString(message["name"].GetString()));
 
+    ui_->material_shading_model_combobox_->blockSignals(true);
     ui_->material_shading_model_combobox_->setCurrentIndex(message["shading_model"].GetInt());
+    ui_->material_shading_model_combobox_->blockSignals(false);
 
     bool metallic = message["metallic"].GetBool();
+    ui_->material_matallic_checkbox_->blockSignals(true);
     ui_->material_matallic_checkbox_->setChecked(metallic);
+    ui_->material_matallic_checkbox_->blockSignals(false);
 
     const auto& base_color = message["base_color"];
     auto palette = ui_->material_base_color_dialog_button_->palette();
     palette.setColor(QPalette::Button, QColor::fromRgbF(base_color[0].GetFloat(), base_color[1].GetFloat(), base_color[2].GetFloat()));
     ui_->material_base_color_dialog_button_->setPalette(palette);
 
-    ui_->material_roughness_slider_->setValue(message["roughness"].GetFloat());
+    // block signal to prevent changing.
+    ui_->material_roughness_slider_->blockSignals(true);
+    ui_->material_roughness_spinbox_->setValue(message["roughness"].GetFloat());
+    ui_->material_roughness_slider_->blockSignals(false);
 
-    ui_->material_speuclar_ior_slider_->setEnabled(!metallic);
-    ui_->material_speuclar_ior_spinbox_->setEnabled(!metallic);
     if (!metallic)
     {
-        ui_->material_speuclar_ior_slider_->setValue(message["specular_ior"].GetFloat());
+        ui_->material_speuclar_ior_slider_->blockSignals(true);
+        ui_->material_speuclar_ior_spinbox_->setValue(message["specular_ior"].GetFloat());
+        ui_->material_speuclar_ior_slider_->blockSignals(false);
     }
+
+    update_material_tab_ui();
 }
 
 void MainWindow::on_material_tab_selected(QTreeWidgetItem* item)
@@ -103,6 +114,8 @@ void MainWindow::on_material_changed(void)
     message.AddMember("specular_ior", ui_->material_speuclar_ior_spinbox_->value(), allocator);
 
     restapi_client_->write(doc);
+
+    update_material_tab_ui();
 }
 
 }   // namespace rpeditor

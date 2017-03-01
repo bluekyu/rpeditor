@@ -302,6 +302,8 @@ void MainWindow::setup_ui(void)
 
     connect(ui_->material_shading_model_combobox_, QOverload<int>::of(&QComboBox::activated), this, &MainWindow::on_material_changed);
 
+    connect(ui_->material_matallic_checkbox_, &QCheckBox::stateChanged, this, &MainWindow::on_material_changed);
+
     connect(ui_->material_base_color_dialog_button_, &QPushButton::pressed, [this]() {
         auto palette = ui_->material_base_color_dialog_button_->palette();
 
@@ -316,26 +318,26 @@ void MainWindow::setup_ui(void)
 
     connect(ui_->material_roughness_slider_, &QSlider::valueChanged, [this](int value) {
         ui_->material_roughness_spinbox_->setValue(value / 100.0);
+        on_material_changed();
     });
     connect(ui_->material_roughness_spinbox_, QOverload<double>::of(&QDoubleSpinBox::valueChanged), [this](double value) {
         ui_->material_roughness_slider_->setValue(value * 100.0);
-        on_material_changed();
     });
 
     connect(ui_->material_speuclar_ior_slider_, &QSlider::valueChanged, [this](int value) {
         ui_->material_speuclar_ior_spinbox_->setValue(value / 100.0);
+        on_material_changed();
     });
     connect(ui_->material_speuclar_ior_spinbox_, QOverload<double>::of(&QDoubleSpinBox::valueChanged), [this](double value) {
         ui_->material_speuclar_ior_slider_->setValue(value * 100.0);
-        on_material_changed();
     });
 
     connect(ui_->material_normal_strength_slider_, &QSlider::valueChanged, [this](int value) {
         ui_->material_normal_strength_spinbox_->setValue(value / 100.0);
+        on_material_changed();
     });
     connect(ui_->material_normal_strength_spinbox_, QOverload<double>::of(&QDoubleSpinBox::valueChanged), [this](double value) {
         ui_->material_normal_strength_slider_->setValue(value * 100.0);
-        on_material_changed();
     });
 
 //    ui_->action_new_project->setShortcuts(QKeySequence::New);
@@ -427,6 +429,13 @@ void MainWindow::set_enable_restapi_actions(bool enable)
         ui_->material_tab_->setEnabled(enable);
         ui_->scenegraph_tree_->clear();
     }
+}
+
+void MainWindow::update_material_tab_ui(void)
+{
+    bool metallic = ui_->material_matallic_checkbox_->isChecked();
+    ui_->material_speuclar_ior_slider_->setEnabled(!metallic);
+    ui_->material_speuclar_ior_spinbox_->setEnabled(!metallic);
 }
 
 void MainWindow::about_application(void)

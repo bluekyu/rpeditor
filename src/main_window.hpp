@@ -97,6 +97,8 @@ private:
 
     void set_enable_restapi_actions(bool enable);
 
+    void update_material_tab_ui(void);
+
     void about_application(void);
 
     /** RPEditor API */

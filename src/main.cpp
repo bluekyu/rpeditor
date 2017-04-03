@@ -29,8 +29,37 @@
 #include "logging.hpp"
 #include "main_window.hpp"
 
+void qt_logging_hander(QtMsgType type, const QMessageLogContext& context, const QString& msg)
+{
+    const std::string& message = msg.toStdString();
+
+    switch (type) {
+    case QtDebugMsg:
+        BOOST_LOG_TRIVIAL(debug) << message;
+        break;
+
+    case QtInfoMsg:
+        BOOST_LOG_TRIVIAL(info) << message;
+        break;
+
+    case QtWarningMsg:
+        BOOST_LOG_TRIVIAL(warning) << message;
+        break;
+
+    case QtCriticalMsg:
+        BOOST_LOG_TRIVIAL(error) << message;
+        break;
+
+    case QtFatalMsg:
+        BOOST_LOG_TRIVIAL(error) << message;
+        abort();
+    }
+}
+
 int main(int argc, char *argv[])
 {
+    qInstallMessageHandler(qt_logging_hander);
+
     QApplication app(argc, argv);
 
     app.setOrganizationName("bluekyu");

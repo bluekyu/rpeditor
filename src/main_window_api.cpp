@@ -78,6 +78,9 @@ void MainWindow::on_geometry_tab_selected(QTreeWidgetItem* item)
 
 void MainWindow::on_scenegraph_item_changed(QTreeWidgetItem* item)
 {
+    if (!restapi_client_)
+        return;
+
     bool is_geometry_node = item->text(1) == "GeomNode";
     ui_->geometry_tab_->setEnabled(is_geometry_node);
     ui_->material_tab_->setEnabled(is_geometry_node);

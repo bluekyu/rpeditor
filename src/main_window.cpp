@@ -413,7 +413,7 @@ void MainWindow::connect_rendering_server(void)
 
         set_enable_restapi_actions(true);
 
-        ui_->status_bar_->showMessage("Rendering server is connected");
+        ui_->status_bar_->showMessage("Connecting to rendering server ...");
     }
 }
 

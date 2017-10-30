@@ -28,9 +28,8 @@
 #include <QtWidgets/QTreeWidget>
 #include <QtWidgets/QFileDialog>
 
-#include <boost/log/trivial.hpp>
-
 #include "restapi/restapi_client.hpp"
+#include "logger_manager.hpp"
 
 namespace rpeditor {
 
@@ -49,13 +48,13 @@ inline void update_scenegraph_subtree(QTreeWidgetItem* parent, const rapidjson::
     }
     else
     {
-        BOOST_LOG_TRIVIAL(error) << "Invalid API specification.";
+        global_logger_->error("Invalid API specification.");
     }
 }
 
 void MainWindow::update_scenegraph_tree(const rapidjson::Value& root_object)
 {
-    BOOST_LOG_TRIVIAL(debug) << "Update scenegraph in tree widget.";
+    global_logger_->debug("Update scenegraph in tree widget.");
 
     ui_->scenegraph_tree_->clear();
 
@@ -72,7 +71,7 @@ void MainWindow::update_scenegraph_tree(const rapidjson::Value& root_object)
     }
     else
     {
-        BOOST_LOG_TRIVIAL(error) << "Invalid API specification.";
+        global_logger_->error("Invalid API specification.");
     }
 }
 

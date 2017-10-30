@@ -23,8 +23,8 @@ set(source_src_restapi
 set(source_src
     "${PROJECT_SOURCE_DIR}/src/collapsible_widget.cpp"
     "${PROJECT_SOURCE_DIR}/src/collapsible_widget.hpp"
-    "${PROJECT_SOURCE_DIR}/src/logging.cpp"
-    "${PROJECT_SOURCE_DIR}/src/logging.hpp"
+    "${PROJECT_SOURCE_DIR}/src/logger_manager.cpp"
+    "${PROJECT_SOURCE_DIR}/src/logger_manager.hpp"
     "${PROJECT_SOURCE_DIR}/src/main.cpp"
     "${PROJECT_SOURCE_DIR}/src/main_window.cpp"
     "${PROJECT_SOURCE_DIR}/src/main_window.hpp"

@@ -24,40 +24,44 @@
 
 #include <QApplication>
 
-#include <boost/log/trivial.hpp>
+#include "logger_manager.hpp"
 
-#include "logging.hpp"
 #include "main_window.hpp"
 
 void qt_logging_hander(QtMsgType type, const QMessageLogContext& context, const QString& msg)
 {
-    const std::string& message = msg.toStdString();
+    std::string context_file, context_function;
+    if (context.file)   context_file = context.file;
+    if (context.function)   context_function = context.function;
 
     switch (type) {
     case QtDebugMsg:
-        BOOST_LOG_TRIVIAL(debug) << message;
+        rpeditor::global_logger_->debug("({}:{}, {}) {}", context_file, context.line, context_function, msg.toStdString());
         break;
 
     case QtInfoMsg:
-        BOOST_LOG_TRIVIAL(info) << message;
+        rpeditor::global_logger_->info("({}:{}, {}) {}", context_file, context.line, context_function, msg.toStdString());
         break;
 
     case QtWarningMsg:
-        BOOST_LOG_TRIVIAL(warning) << message;
+        rpeditor::global_logger_->warn("({}:{}, {}) {}", context_file, context.line, context_function, msg.toStdString());
         break;
 
     case QtCriticalMsg:
-        BOOST_LOG_TRIVIAL(error) << message;
+        rpeditor::global_logger_->error("({}:{}, {}) {}", context_file, context.line, context_function, msg.toStdString());
         break;
 
     case QtFatalMsg:
-        BOOST_LOG_TRIVIAL(error) << message;
+        rpeditor::global_logger_->critical("({}:{}, {}) {}", context_file, context.line, context_function, msg.toStdString());
         abort();
     }
 }
 
 int main(int argc, char *argv[])
 {
+    if (!rpeditor::LoggerManager::get_instance().is_created())
+        rpeditor::LoggerManager::get_instance().create("rpeditor.log");
+
     qInstallMessageHandler(qt_logging_hander);
 
     QApplication app(argc, argv);
@@ -71,7 +75,7 @@ int main(int argc, char *argv[])
 
     const int retcode = app.exec();
 
-    BOOST_LOG_TRIVIAL(info) << "Exiting application.";
+    rpeditor::global_logger_->info("Exiting application.");
 
     return retcode;
 }

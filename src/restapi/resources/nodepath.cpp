@@ -22,11 +22,10 @@
  * SOFTWARE.
  */
 
-#include <boost/log/trivial.hpp>
-
 #include "restapi/resolve_message.hpp"
 
 #include "main_window.hpp"
+#include "logger_manager.hpp"
 
 namespace rpeditor {
 
@@ -39,7 +38,7 @@ bool resolve_nodepath(const rapidjson::Document& doc)
     }
     else
     {
-        BOOST_LOG_TRIVIAL(error) << "Unknown method: " << method;
+        global_logger_->error("Unknown method: {}", method);
         return false;
     }
 

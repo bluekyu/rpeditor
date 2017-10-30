@@ -29,8 +29,6 @@
 
 #include <QtWidgets/QTreeWidget>
 
-#include <boost/log/trivial.hpp>
-
 #include "restapi/restapi_client.hpp"
 
 namespace rpeditor {

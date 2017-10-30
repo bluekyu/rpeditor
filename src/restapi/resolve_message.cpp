@@ -26,12 +26,12 @@
 
 #include <iostream>
 
-#include <boost/log/trivial.hpp>
-
 #include <rapidjson/document.h>
 #include <rapidjson/writer.h>
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/error/en.h>
+
+#include "logger_manager.hpp"
 
 namespace rpeditor {
 
@@ -48,19 +48,19 @@ void resolve_message(const std::string& restapi_message)
 
     if (!result)
     {
-        BOOST_LOG_TRIVIAL(error) << "JSON parse error: " << rapidjson::GetParseError_En(result.Code());
+        global_logger_->error("JSON parse error: {}", rapidjson::GetParseError_En(result.Code()));
         return;
     }
 
     if (!doc.IsObject())
     {
-        BOOST_LOG_TRIVIAL(error) << "JSON Document is NOT object: " << restapi_message;
+        global_logger_->error("JSON Document is NOT object: {}", restapi_message);
         return;
     }
 
     if (!doc.HasMember("resource"))
     {
-        BOOST_LOG_TRIVIAL(error) << "Message has NOT 'resource': " << restapi_message;
+        global_logger_->error("Message has NOT 'resource': {}", restapi_message);
         return;
     }
 
@@ -74,12 +74,12 @@ void resolve_message(const std::string& restapi_message)
             rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
             doc.Accept(writer);
 
-            BOOST_LOG_TRIVIAL(debug) << std::string(buffer.GetString(), buffer.GetSize());
+            global_logger_->debug(std::string(buffer.GetString(), buffer.GetSize()));
         }
     }
     else
     {
-        BOOST_LOG_TRIVIAL(error) << "NO resolver for the resource: " << resource;
+        global_logger_->error("NO resolver for the resource: {}", resource);
     }
 }
 

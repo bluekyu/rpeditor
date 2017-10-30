@@ -22,10 +22,9 @@
  * SOFTWARE.
  */
 
-#include <boost/log/trivial.hpp>
-
 #include "restapi/resolve_message.hpp"
 
+#include "logger_manager.hpp"
 #include "main_window.hpp"
 
 namespace rpeditor {
@@ -39,7 +38,7 @@ bool resolve_geomnode(const rapidjson::Document& doc)
     }
     else
     {
-        BOOST_LOG_TRIVIAL(error) << "Unknown method: " << method;
+        global_logger_->error("Unknown method: {}", method);
         return false;
     }
 

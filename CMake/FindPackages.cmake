@@ -10,7 +10,7 @@ set(BOOST_ROOT "" CACHE PATH "Hint for finding boost root directory")
 set(BOOST_INCLUDEDIR "" CACHE PATH "Hint for finding boost include directory")
 set(BOOST_LIBRARYDIR "" CACHE PATH "Hint for finding boost library directory")
 
-find_package(Boost 1.62.0 REQUIRED COMPONENTS filesystem system log thread date_time chrono log_setup)
+find_package(Boost 1.64.0 REQUIRED COMPONENTS filesystem)
 if(Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIRS})
     message(STATUS "Boost include path: ${Boost_INCLUDE_DIRS}")

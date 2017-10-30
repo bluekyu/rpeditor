@@ -1,62 +1,60 @@
-# CMakeList.txt template for executable.
 # Author: Younguk Kim (bluekyu)
 # Date  : 2016-05-18
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.8)
 project(rpeditor)
 
 # === configure ====================================================================================
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/CMake)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)    # Project Grouping
+
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 # check package
 include(FindPackages)
-
-# debug
-#set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D")
-set(CMAKE_DEBUG_POSTFIX "d")
-
-# platform specific configure
-if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall")
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto")
-
-    # build type
-    if(NOT CMAKE_BUILD_TYPE)
-        set(CMAKE_BUILD_TYPE "Release" CACHE STRING
-            "Choose the type of build, options are: None Debug Release."
-            FORCE)
-    endif()
-    message(STATUS "Build Type: ${CMAKE_BUILD_TYPE}")
-elseif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-    if(MSVC)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
-        set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /LTCG")
-        set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /LTCG")
-
-        # target to Windows 7
-        add_definitions("-DWINVER=0x0601")
-        add_definitions("-D_WIN32_WINNT=0x0601")
-    endif()
-else()
-    message(WARNING "Unsupported system: ${CMAKE_SYSTEM_NAME}")
+if(WIN32)
+    include(windows_utils)
 endif()
 
-# subdirectory
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}/src")      # /src
-include_directories("${PROJECT_BINARY_DIR}")                # /build
+# === project specific packages ===
+# find spdlog
+if(NOT TARGET spdlog::spdlog)
+    find_package(spdlog REQUIRED)
+endif()
 
 # set input files
 include("${PROJECT_SOURCE_DIR}/files.cmake")
 # ==================================================================================================
 
-# === build & install ==============================================================================
-# create executable
+# === target =======================================================================================
 add_executable(${PROJECT_NAME} WIN32 ${rpeditor_sources})
-target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES} ${Qt_LIBRARIES})
 
-# install
+target_compile_features(${PROJECT_NAME} PRIVATE cxx_auto_type)
+if(MSVC)
+    windows_add_longpath_manifest(${PROJECT_NAME})
+    target_compile_features(${PROJECT_NAME} PUBLIC cxx_final cxx_strong_enums cxx_delegating_constructors
+        PRIVATE $<$<VERSION_GREATER:${MSVC_VERSION},1800>:cxx_generic_lambdas>
+    )
+    target_compile_options(${PROJECT_NAME} PRIVATE /MP /wd4251 /utf-8 /std:c++17)
+    set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS_RELWITHDEBINFO    " /INCREMENTAL:NO /OPT:REF /OPT:ICF ")
+    set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS_RELEASE           " /INCREMENTAL:NO /OPT:REF /OPT:ICF ")
+else()
+    target_compile_features(${PROJECT_NAME} PUBLIC cxx_final cxx_strong_enums cxx_delegating_constructors
+        PRIVATE cxx_std_17)
+    target_compile_options(${PROJECT_NAME} PRIVATE -Wall)
+endif()
+
+target_include_directories(${PROJECT_NAME}
+    PRIVATE "${PROJECT_BINARY_DIR}" "${PROJECT_SOURCE_DIR}/include" "${CMAKE_CURRENT_SOURCE_DIR}/src"
+)
+
+target_link_libraries(${PROJECT_NAME}
+    PRIVATE ${Boost_LIBRARIES} ${Qt_LIBRARIES} spdlog::spdlog
+)
+# ==================================================================================================
+
+# === install ======================================================================================
 install(TARGETS ${PROJECT_NAME}
     RUNTIME DESTINATION "bin"
     LIBRARY DESTINATION "lib"
     ARCHIVE DESTINATION "lib")
+# ==================================================================================================

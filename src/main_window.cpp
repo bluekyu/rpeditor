@@ -35,7 +35,6 @@
 #include <QtGui/QCloseEvent>
 #include <QtWidgets/QColorDialog>
 
-#include <boost/log/trivial.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/filesystem.hpp>
 
@@ -46,6 +45,8 @@
 #include "restapi/restapi_client.hpp"
 #include "restapi/restapi_event.hpp"
 #include "restapi/resolve_message.hpp"
+
+#include "logger_manager.hpp"
 
 namespace rpeditor {
 
@@ -65,13 +66,13 @@ bool MainWindow::toggle_system_console(void)
     {
         if (!AllocConsole())
         {
-            BOOST_LOG_TRIVIAL(error) << "Cannot allocate console.";
+            global_logger_->error("Cannot allocate console.");
             return is_shown_system_console_ = false;
         }
 
         if (AttachConsole(GetCurrentProcessId()))
         {
-            BOOST_LOG_TRIVIAL(error) << "Cannot attach console.";
+            global_logger_->error("Cannot attach console.");
             FreeConsole();
             return is_shown_system_console_ = false;
         }
@@ -82,7 +83,7 @@ bool MainWindow::toggle_system_console(void)
         freopen_s(&dummy, "CON", "w", stdout);
         freopen_s(&dummy, "CON", "w", stderr);
 
-        BOOST_LOG_TRIVIAL(info) << "System console is created.";
+        global_logger_->info("System console is created.");
 
         return is_shown_system_console_ = true;
     }
@@ -93,7 +94,7 @@ bool MainWindow::toggle_system_console(void)
 
 MainWindow::MainWindow(QWidget *parent): QMainWindow(parent), ui_(new Ui::MainWindow)
 {
-    BOOST_LOG_TRIVIAL(debug) << "Initializing MainWindow ...";
+    global_logger_->debug("Initializing MainWindow ...");
 
     ui_->setupUi(this);
 
@@ -120,13 +121,13 @@ void MainWindow::closeEvent(QCloseEvent* ev)
 {
     if (restapi_client_)
     {
-        BOOST_LOG_TRIVIAL(debug) << "Waiting for closing RESTAPI client ...";
+        global_logger_->debug("Waiting for closing RESTAPI client ...");
         restapi_client_->close();
     }
 
     if (restapi_network_thread_ && restapi_network_thread_->joinable())
     {
-        BOOST_LOG_TRIVIAL(info) << "Wainting for exiting WebSocket network thread ...";
+        global_logger_->info("Wainting for exiting WebSocket network thread ...");
         restapi_network_thread_->join();
         restapi_network_thread_.reset();
 
@@ -170,12 +171,12 @@ bool MainWindow::load_settings(void)
 
     if (settings_file_path.isEmpty())
     {
-        BOOST_LOG_TRIVIAL(debug) << "No '" << SETTING_FILE_NAME << "' file.";
+        global_logger_->debug("No '{}' file.", SETTING_FILE_NAME);
 
         const QString& config_dir_path =  QStandardPaths::writableLocation(QStandardPaths::StandardLocation::AppConfigLocation);
         if (config_dir_path.isEmpty())
         {
-            BOOST_LOG_TRIVIAL(error) << "Cannot find location to write configuration files.";
+            global_logger_->error("Cannot find location to write configuration files.");
         }
         else
         {
@@ -193,12 +194,12 @@ bool MainWindow::load_settings(void)
 
             boost::property_tree::read_json(settings_file_path, settings);
 
-            BOOST_LOG_TRIVIAL(info) << "Settings loaded: " << settings_file_path;
+            global_logger_->info("Settings loaded: {}", settings_file_path);
         }
         catch (const std::exception& e)
         {
-            BOOST_LOG_TRIVIAL(error) << "Cannot read setting file: " << get_settings_file_path();
-            BOOST_LOG_TRIVIAL(error) << "Error message: " << e.what();
+            global_logger_->error("Cannot read setting file: {}", get_settings_file_path());
+            global_logger_->error("Error message: {}", e.what());
             return false;
         }
     }
@@ -216,7 +217,7 @@ bool MainWindow::save_settings(void)
     boost::filesystem::path settings_file_path(get_settings_file_path());
     if (settings_file_path.empty())
     {
-        BOOST_LOG_TRIVIAL(error) << "Cannot find location to write setting file.";
+        global_logger_->error("Cannot find location to write setting file.");
         return false;
     }
 
@@ -226,12 +227,12 @@ bool MainWindow::save_settings(void)
     }
     catch (const std::exception& e)
     {
-        BOOST_LOG_TRIVIAL(error) << "Cannot write setting file: " << settings_file_path;
-        BOOST_LOG_TRIVIAL(error) << "Error message: " << e.what();
+        global_logger_->error("Cannot write setting file: {}", settings_file_path.generic_string());
+        global_logger_->error("Error message: {}", e.what());
         return false;
     }
 
-    BOOST_LOG_TRIVIAL(info) << "Settings saved: " << settings_file_path;
+    global_logger_->info("Settings saved: {}", settings_file_path.generic_string());
 
     return true;
 }
@@ -397,12 +398,12 @@ void MainWindow::connect_rendering_server(void)
 {
     if (!restapi_client_)
     {
-        BOOST_LOG_TRIVIAL(info) << "Connecting rendering server.";
+        global_logger_->info("Connecting rendering server.");
 
         restapi_client_ = new RestAPIClient(QUrl(QStringLiteral("ws://localhost:8888")), this);
 
         QObject::connect(restapi_client_, &RestAPIClient::closed, [this]() {
-            BOOST_LOG_TRIVIAL(info) << "Rendering server is disconnected.";
+            global_logger_->info("Rendering server is disconnected.");
 
             restapi_client_->deleteLater();
             restapi_client_ = nullptr;
